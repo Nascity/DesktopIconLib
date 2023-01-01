@@ -18,7 +18,6 @@ typedef struct tagDESKTOP_MEMORY
 	LPVOID	lpMemory;
 } DESKTOP_MEMORY, * LPDESKTOP_MEMORY;
 
-// Desktop structure
 typedef struct tagDESKTOP
 {
 	// Handle to the Desktop ListView
