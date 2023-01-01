@@ -1,11 +1,6 @@
 
 /* ------------------------------------------------ */
 
-#include <stdio.h>
-
-#include <Windows.h>
-#include <commctrl.h>
-
 #include "Desktop.h"
 
 /* ------------------------------------------------ */
@@ -107,8 +102,6 @@ BOOL RequestItem(LPDESKTOP lpDesktop, INT iItemIndex)
 
 /* ------------------------------------------------ */
 
-// https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-listview_getitem
-// https://stackoverflow.com/questions/65910101/get-items-from-taskmanager-details-listview
 BOOL DesktopInit(LPDESKTOP lpDesktop)
 {
 	DWORD				i;
