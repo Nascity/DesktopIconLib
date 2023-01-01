@@ -54,6 +54,34 @@ LPVOID AllocateMemoryInDesktopProcess(LPDESKTOP lpDesktop)
 	);
 }
 
+/* ------------------------------------------------ */
+
+// INTERNAL
+// Writes to memory in the Desktop process
+BOOL WriteDesktopProcessMemory(LPDESKTOP lpDesktop, BYTE offset, LPCVOID buffer, SIZE_T bufferSize)
+{
+	return WriteProcessMemory(
+		lpDesktop->internal_dm.hProcess,
+		((LPBYTE)lpDesktop->internal_dm.lpMemory) + offset,
+		buffer,
+		bufferSize,
+		NULL
+	);
+}
+
+BOOL ReadDesktopProcessMemory(LPDESKTOP lpDesktop, BYTE offset, LPVOID buffer, SIZE_T bufferSize)
+{
+	return ReadProcessMemory(
+		lpDesktop->internal_dm.hProcess,
+		((LPBYTE)lpDesktop->internal_dm.lpMemory) + offset,
+		buffer,
+		bufferSize,
+		NULL
+	);
+}
+
+/* ------------------------------------------------ */
+
 BOOL TestFunction(LPDESKTOP lpItem)
 {
 	
@@ -88,14 +116,6 @@ BOOL DesktopInit(LPDESKTOP lpDesktop)
 		return FALSE;
 
 
-
-
-
-	//// Retrieves LVITEM structure for every item on the desktop
-	//for (i = 0; i < lpDesktop->dwItemCount; i++)
-	//{
-	//	
-	//}
 
 	return TRUE;
 }
