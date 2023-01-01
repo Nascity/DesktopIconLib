@@ -1,10 +1,26 @@
 
 /* ------------------------------------------------ */
 
+#include <stdio.h>
+
 #include <Windows.h>
 #include <commctrl.h>
 
 #include "Desktop.h"
+
+/* ------------------------------------------------ */
+
+// INTERNAL
+// Returns NULL on failure
+LPVOID AllocateMemoryToItemsArray(LPDESKTOP lpDesktop)
+{
+	return (lpDesktop->lpItems = VirtualAlloc(
+		NULL,
+		sizeof(LVITEMW) * lpDesktop->dwItemCount,
+		MEM_RESERVE | MEM_COMMIT,
+		PAGE_EXECUTE_READWRITE
+	));
+}
 
 /* ------------------------------------------------ */
 
@@ -39,52 +55,53 @@ HANDLE GetDesktopProcessHandle(LPDESKTOP lpDesktop)
 	DWORD	dwPID;
 
 	GetWindowThreadProcessId(lpDesktop->hwndListview, &dwPID);
-	return lpDesktop->internal_dm.hProcess = OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, dwPID);
+	return lpDesktop->dkResource.hProcess = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, dwPID);
 }
 
 // INTERNAL
 LPVOID AllocateMemoryInDesktopProcess(LPDESKTOP lpDesktop)
 {
-	return lpDesktop->internal_dm.lpMemory = VirtualAllocEx(
-		lpDesktop->internal_dm.hProcess,
+	return lpDesktop->dkResource.lpMemory = VirtualAllocEx(
+		lpDesktop->dkResource.hProcess,
 		NULL,
 		sizeof(LVITEMW) * lpDesktop->dwItemCount,
-		MEM_COMMIT,
-		PAGE_READWRITE
+		MEM_RESERVE | MEM_COMMIT,
+		PAGE_EXECUTE_READWRITE
 	);
 }
 
 /* ------------------------------------------------ */
 
 // INTERNAL
-// Writes to memory in the Desktop process
-BOOL WriteDesktopProcessMemory(LPDESKTOP lpDesktop, BYTE offset, LPCVOID buffer, SIZE_T bufferSize)
+// Initializes LVITEM structure, copies it to the memory on the Desktop process,
+// and uses ListView_GetItem macro to retrieve the item information
+BOOL RequestItem(LPDESKTOP lpDesktop, INT iItemIndex)
 {
-	return WriteProcessMemory(
-		lpDesktop->internal_dm.hProcess,
-		((LPBYTE)lpDesktop->internal_dm.lpMemory) + offset,
-		buffer,
-		bufferSize,
+	LVITEMW	temp = { 0, };
+
+	BOOL tempBool;
+
+	temp.mask = LVIF_TEXT | LVIF_STATE | LVIF_PARAM | LVIF_INDENT | LVIF_IMAGE;
+	temp.iItem = iItemIndex;
+	temp.iSubItem = 0;
+	temp.stateMask = -1;
+
+	WriteProcessMemory(
+		lpDesktop->dkResource.hProcess,
+		(LPLVITEMW)lpDesktop->dkResource.lpMemory + iItemIndex,
+		&temp,
+		sizeof(LVITEMW),
 		NULL
 	);
-}
 
-BOOL ReadDesktopProcessMemory(LPDESKTOP lpDesktop, BYTE offset, LPVOID buffer, SIZE_T bufferSize)
-{
-	return ReadProcessMemory(
-		lpDesktop->internal_dm.hProcess,
-		((LPBYTE)lpDesktop->internal_dm.lpMemory) + offset,
-		buffer,
-		bufferSize,
-		NULL
-	);
-}
-
-/* ------------------------------------------------ */
-
-BOOL TestFunction(LPDESKTOP lpItem)
-{
-	
+	return ListView_GetItem(lpDesktop->hwndListview, (LPLVITEMW)lpDesktop->dkResource.lpMemory + iItemIndex) &&
+		ReadProcessMemory(
+			lpDesktop->dkResource.hProcess,
+			(LPLVITEMW)lpDesktop->dkResource.lpMemory,
+			lpDesktop->lpItems,
+			sizeof(LVITEMW),
+			NULL
+		);
 }
 
 /* ------------------------------------------------ */
@@ -93,8 +110,7 @@ BOOL TestFunction(LPDESKTOP lpItem)
 // https://stackoverflow.com/questions/65910101/get-items-from-taskmanager-details-listview
 BOOL DesktopInit(LPDESKTOP lpDesktop)
 {
-	INT				i;
-	DESKTOP_MEMORY	dm;
+	DWORD				i;
 
 	// Finds handle to the ListView
 	if (!(lpDesktop->hwndListview = FindDesktopListViewHwnd()))
@@ -103,28 +119,34 @@ BOOL DesktopInit(LPDESKTOP lpDesktop)
 	// Retrieves item count
 	lpDesktop->dwItemCount = ListView_GetItemCount(lpDesktop->hwndListview);
 
+	// Allocates memory to lpItems
+	if (!AllocateMemoryToItemsArray(lpDesktop))
+		return FALSE;
+
 	// Retreives handle to the Desktop process
 	// The handle has access rights of PROCESS_VM_READ and PROCESS_VM_WRITE
 	if (!GetDesktopProcessHandle(lpDesktop))
 		return FALSE;
 
 	// Allocates memory for items based on the item count
-	if (!(lpDesktop->lpItems = AllocateMemoryInDesktopProcess(lpDesktop, &dm)))
+	if (!AllocateMemoryInDesktopProcess(lpDesktop))
 		return FALSE;
 
-	if (!TestFunction(lpDesktop))
+	if (!RequestItem(lpDesktop, 0))
 		return FALSE;
 
-
+	wprintf(L"%s", lpDesktop->lpItems->pszText);
 
 	return TRUE;
 }
 
 BOOL DesktopFree(LPDESKTOP lpDesktop)
 {
-	BOOL	ret = VirtualFreeEx(lpDesktop->internal_dm.hProcess, lpDesktop->internal_dm.lpMemory, 0, MEM_RELEASE);
-
-	CloseHandle(lpDesktop->internal_dm.hProcess);
+	BOOL	ret = TRUE;
+	
+	ret &= VirtualFree(lpDesktop->lpItems, 0, MEM_RELEASE);
+	ret &= VirtualFreeEx(lpDesktop->dkResource.hProcess, lpDesktop->dkResource.lpMemory, 0, MEM_RELEASE);
+	ret &= CloseHandle(lpDesktop->dkResource.hProcess);
 
 	return ret;
 }

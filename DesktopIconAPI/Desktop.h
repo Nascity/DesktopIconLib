@@ -9,14 +9,14 @@
 
 /* ------------------------------------------------ */
 
-typedef struct tagDESKTOP_MEMORY
+typedef struct tagDESKTOP_RESOURCE
 {
 	// Handle to the Desktop process
 	HANDLE	hProcess;
 
 	// Pointer to the memory allocated inside the Desktop process
 	LPVOID	lpMemory;
-} DESKTOP_MEMORY, * LPDESKTOP_MEMORY;
+} DESKTOP_RESOURCE, * LPDESKTOP_RESOURCE;
 
 typedef struct tagDESKTOP
 {
@@ -29,8 +29,8 @@ typedef struct tagDESKTOP
 	// Item count
 	DWORD		dwItemCount;
 
-	// Internal use
-	DESKTOP_MEMORY	internal_dm;
+	// Desktop resources which have to be released
+	DESKTOP_RESOURCE	dkResource;
 } DESKTOP, * LPDESKTOP;
 
 /* ------------------------------------------------ */
