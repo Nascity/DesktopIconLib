@@ -1,20 +1,35 @@
 
 /* ------------------------------------------------ */
 
+#include <stdio.h>
+
 #include "Desktop.h"
 
 /* ------------------------------------------------ */
 
+
+
+/* ------------------------------------------------ */
+
 // INTERNAL
+// Allocates memory for items array and their names
 // Returns NULL on failure
-LPVOID AllocateMemoryToItemsArray(LPDESKTOP lpDesktop)
+LPVOID AllocateMemoryToItemArray(LPDESKTOP lpDesktop)
 {
-	return (lpDesktop->lpItems = VirtualAlloc(
-		NULL,
-		sizeof(LVITEMW) * lpDesktop->dwItemCount,
-		MEM_RESERVE | MEM_COMMIT,
-		PAGE_EXECUTE_READWRITE
-	));
+	return
+		(lpDesktop->resource.lpItems
+			= VirtualAlloc(
+				NULL,
+				sizeof(LVITEMW) * lpDesktop->dwItemCount,
+				MEM_RESERVE | MEM_COMMIT,
+				PAGE_READWRITE))
+		&&
+		(lpDesktop->resource.lpItemNames
+			= VirtualAlloc(
+				NULL,
+				sizeof(WCHAR) * MAX_PATH * lpDesktop->dwItemCount,
+				MEM_RELEASE | MEM_COMMIT,
+				PAGE_READWRITE));
 }
 
 /* ------------------------------------------------ */
@@ -50,62 +65,122 @@ HANDLE GetDesktopProcessHandle(LPDESKTOP lpDesktop)
 	DWORD	dwPID;
 
 	GetWindowThreadProcessId(lpDesktop->hwndListview, &dwPID);
-	return lpDesktop->dkResource.hProcess = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, dwPID);
-}
-
-// INTERNAL
-LPVOID AllocateMemoryInDesktopProcess(LPDESKTOP lpDesktop)
-{
-	return lpDesktop->dkResource.lpMemory = VirtualAllocEx(
-		lpDesktop->dkResource.hProcess,
-		NULL,
-		sizeof(LVITEMW) * lpDesktop->dwItemCount,
-		MEM_RESERVE | MEM_COMMIT,
-		PAGE_EXECUTE_READWRITE
-	);
+	return lpDesktop->resource.hProcess = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, dwPID);
 }
 
 /* ------------------------------------------------ */
 
 // INTERNAL
-// Initializes LVITEM structure, copies it to the memory on the Desktop process,
-// and uses ListView_GetItem macro to retrieve the item information
-BOOL RequestItem(LPDESKTOP lpDesktop, INT iItemIndex)
+// Retrieves the array of LVITEM structures at the point
+// at which the function was called
+BOOL RequestItems(LPDESKTOP lpDesktop)
 {
-	LVITEMW	temp = { 0, };
+	DWORD	i;
+	LVITEMW	tempItem = { 0, };
+
+	LPLVITEMW	lpTempItems = VirtualAllocEx(
+		lpDesktop->resource.hProcess,
+		NULL,
+		sizeof(LVITEMW) * lpDesktop->dwItemCount,
+		MEM_RESERVE | MEM_COMMIT,
+		PAGE_READWRITE
+	);
+	LPWSTR		lpTempNames = VirtualAllocEx(
+		lpDesktop->resource.hProcess,
+		NULL,
+		sizeof(WCHAR) * MAX_PATH * lpDesktop->dwItemCount,
+		MEM_RELEASE | MEM_COMMIT,
+		PAGE_READWRITE
+	);
+
+	if (!lpTempItems || !lpTempNames)
+		return FALSE;
+
+	for (i = 0; i < lpDesktop->dwItemCount; i++)
+	{
+		tempItem.mask = LVIF_COLFMT | LVIF_COLUMNS | LVIF_GROUPID | LVIF_IMAGE | LVIF_INDENT | LVIF_PARAM | LVIF_STATE | LVIF_TEXT;
+		tempItem.iItem = i;
+		tempItem.iSubItem = 0;
+		tempItem.stateMask = -1;
+
+		tempItem.cchTextMax = MAX_PATH;
+		tempItem.pszText = lpTempNames + MAX_PATH * i;
+
+		if (!WriteProcessMemory(
+			lpDesktop->resource.hProcess,
+			lpTempItems + i,
+			&tempItem,
+			sizeof(LVITEMW),
+			NULL
+		))
+			return FALSE;
+
+		ListView_GetItem(lpDesktop->hwndListview, lpTempItems + i);
+	}
+
+	/*LVITEMW	temp = { 0, };
+
+	LPLVITEMW	lpProcTempItem = VirtualAllocEx(
+		lpDesktop->dkResource.hProcess,
+		NULL,
+		sizeof(LVITEMW),
+		MEM_RESERVE | MEM_COMMIT,
+		PAGE_READWRITE
+	);
+	LPWSTR		lpProcTempName = VirtualAllocEx(
+		lpDesktop->dkResource.hProcess,
+		NULL,
+		sizeof(WCHAR) * MAX_PATH,
+		MEM_RESERVE | MEM_COMMIT,
+		PAGE_READWRITE
+	);
+	LPWSTR		lpItemName = VirtualAlloc(
+		NULL,
+		sizeof(WCHAR) * MAX_PATH,
+		MEM_RESERVE | MEM_COMMIT,
+		PAGE_READWRITE
+	);
+
+	if (!lpProcTempItem || !lpProcTempName || !lpItemName)
+		return FALSE;
 
 	temp.mask = LVIF_COLFMT | LVIF_COLUMNS | LVIF_GROUPID |
 		LVIF_IMAGE | LVIF_INDENT | LVIF_PARAM |
-		LVIF_STATE | LVIF_TEXT | LVIF_NORECOMPUTE;
-
+		LVIF_STATE | LVIF_TEXT;
 	temp.iItem = iItemIndex;
 	temp.iSubItem = 0;
 	temp.stateMask = -1;
 
-	WriteProcessMemory(
+	temp.cchTextMax = MAX_PATH;
+	temp.pszText = lpProcTempName;
+
+	if (WriteProcessMemory(
 		lpDesktop->dkResource.hProcess,
-		(LPLVITEMW)lpDesktop->dkResource.lpMemory + iItemIndex,
+		lpProcTempItem,
 		&temp,
 		sizeof(LVITEMW),
-		NULL
-	);
+		NULL))
+		return FALSE;
 
-	return ListView_GetItem(lpDesktop->hwndListview, (LPLVITEMW)lpDesktop->dkResource.lpMemory + iItemIndex) &&
+	return ListView_GetItem(lpDesktop->hwndListview, lpProcTempItem) &&
 		ReadProcessMemory(
 			lpDesktop->dkResource.hProcess,
-			(LPLVITEMW)lpDesktop->dkResource.lpMemory,
+			lpProcTempItem,
 			lpDesktop->lpItems,
 			sizeof(LVITEMW),
 			NULL
-		);
+		) &&
+		ReadProcessMemory(
+			lpDesktop->dkResource.hProcess,
+			lpTempAtProcess,
+			((LPLVITEMW)lpDesktop->dkResource.lpMemory)
+		)*/
 }
 
 /* ------------------------------------------------ */
 
 BOOL DesktopInit(LPDESKTOP lpDesktop)
 {
-	DWORD				i;
-
 	// Finds handle to the ListView
 	if (!(lpDesktop->hwndListview = FindDesktopListViewHwnd()))
 		return FALSE;
@@ -114,7 +189,7 @@ BOOL DesktopInit(LPDESKTOP lpDesktop)
 	lpDesktop->dwItemCount = ListView_GetItemCount(lpDesktop->hwndListview);
 
 	// Allocates memory to lpItems
-	if (!AllocateMemoryToItemsArray(lpDesktop))
+	if (!AllocateMemoryToItemArray(lpDesktop))
 		return FALSE;
 
 	// Retreives handle to the Desktop process
@@ -122,11 +197,7 @@ BOOL DesktopInit(LPDESKTOP lpDesktop)
 	if (!GetDesktopProcessHandle(lpDesktop))
 		return FALSE;
 
-	// Allocates memory for items based on the item count
-	if (!AllocateMemoryInDesktopProcess(lpDesktop))
-		return FALSE;
-
-	if (!RequestItem(lpDesktop, 0))
+	if (!RequestItems(lpDesktop))
 		return FALSE;
 
 	return TRUE;
@@ -134,11 +205,8 @@ BOOL DesktopInit(LPDESKTOP lpDesktop)
 
 BOOL DesktopFree(LPDESKTOP lpDesktop)
 {
-	BOOL	ret = TRUE;
-	
-	ret &= VirtualFree(lpDesktop->lpItems, 0, MEM_RELEASE);
-	ret &= VirtualFreeEx(lpDesktop->dkResource.hProcess, lpDesktop->dkResource.lpMemory, 0, MEM_RELEASE);
-	ret &= CloseHandle(lpDesktop->dkResource.hProcess);
-
-	return ret;
+	return
+		VirtualFree(lpDesktop->resource.lpItems, 0, MEM_RELEASE) &&
+		VirtualFree(lpDesktop->resource.lpItemNames, 0, MEM_RELEASE) &&
+		CloseHandle(lpDesktop->resource.hProcess);
 }
