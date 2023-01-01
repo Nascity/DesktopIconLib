@@ -27,7 +27,7 @@ LPVOID AllocateMemoryToItemsArray(LPDESKTOP lpDesktop)
 // INTERNAL
 // Function to find hwnd to the Desktop ListView
 // Returns NULL when fails
-HWND FindDesktopListViewHwnd()
+HWND FindDesktopListViewHwnd(VOID)
 {
 	HWND	hDesktop = GetDesktopWindow();
 
@@ -79,9 +79,10 @@ BOOL RequestItem(LPDESKTOP lpDesktop, INT iItemIndex)
 {
 	LVITEMW	temp = { 0, };
 
-	BOOL tempBool;
+	temp.mask = LVIF_COLFMT | LVIF_COLUMNS | LVIF_GROUPID |
+		LVIF_IMAGE | LVIF_INDENT | LVIF_PARAM |
+		LVIF_STATE | LVIF_TEXT | LVIF_NORECOMPUTE;
 
-	temp.mask = LVIF_TEXT | LVIF_STATE | LVIF_PARAM | LVIF_INDENT | LVIF_IMAGE;
 	temp.iItem = iItemIndex;
 	temp.iSubItem = 0;
 	temp.stateMask = -1;
@@ -134,8 +135,6 @@ BOOL DesktopInit(LPDESKTOP lpDesktop)
 
 	if (!RequestItem(lpDesktop, 0))
 		return FALSE;
-
-	wprintf(L"%s", lpDesktop->lpItems->pszText);
 
 	return TRUE;
 }
