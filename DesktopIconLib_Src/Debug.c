@@ -28,6 +28,9 @@ VOID Debug_PrintMembersByIndex(DESKTOP desktop, INT index)
 	wprintf(L"%-8s%-12s%d\n", L"int", L"iIndent", item.iIndent);
 	wprintf(L"%-8s%-12s%d\n", L"int", L"iGroupId", item.iGroupId);
 	wprintf(L"%-8s%-12s%u\n", L"UINT", L"cColumns", item.cColumns);
+	wprintf(L"%-8s%-12s%s\n", L"PUINT", L"puColumns", L"Not Implemented");
+	wprintf(L"%-8s%-12s%s\n", L"int*", L"piColFmt", L"Not Implemented");
+	wprintf(L"%-8s%-12s%d\n", L"int", L"iGroup", item.iGroup);
 }
 
 /* ------------------------------------------------ */

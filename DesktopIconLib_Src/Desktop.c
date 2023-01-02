@@ -41,23 +41,72 @@ VOID RetrieveTrivialInformation(LPDESKTOP lpDesktop)
 }
 
 // INTERNAL
-// Allocates memory for items array and their names
-BOOL AllocateMemoryToItemArray(LPDESKTOP lpDesktop)
+// Allocates memory for item(s) and their resources
+// If allocating for DESKTOP, itemcount = lpDesktop->dwItemCount
+// If allocating for explorer.exe, itemcount = 1
+BOOL AllocateIRS(LPIRS lpIRS, HANDLE hProcess, DWORD itemcount)
+{
+	// For item(s)
+	if (lpIRS->lpItems
+		= VirtualAllocEx(
+			hProcess,
+			NULL,
+			sizeof(LVITEMW) * itemcount,
+			MEM_RESERVE | MEM_COMMIT,
+			PAGE_READWRITE
+		))
+	{
+		// For name(s)
+		if (lpIRS->lpItemNames
+			= VirtualAllocEx(
+				hProcess,
+				NULL,
+				sizeof(WCHAR) * MAX_PATH * itemcount,
+				MEM_RESERVE | MEM_COMMIT,
+				PAGE_READWRITE
+			))
+		{
+			// For puColumns(es)
+			if (lpIRS->puColumnses
+				= VirtualAllocEx(
+					hProcess,
+					NULL,
+					sizeof(UINT) * itemcount,
+					MEM_RESERVE | MEM_COMMIT,
+					PAGE_READWRITE
+				))
+			{
+				// For piColFmt(s)
+				if (lpIRS->piColFmts
+					= VirtualAllocEx(
+						hProcess,
+						NULL,
+						sizeof(INT) * itemcount,
+						MEM_RESERVE | MEM_COMMIT,
+						PAGE_READWRITE
+					))
+				{
+					return TRUE;
+				}
+				VirtualFreeEx(hProcess, lpIRS->puColumnses, 0, MEM_RELEASE);
+			}
+			VirtualFreeEx(hProcess, lpIRS->lpItemNames, 0, MEM_RELEASE);
+		}
+		VirtualFreeEx(hProcess, lpIRS->lpItems, 0, MEM_RELEASE);
+	}
+
+	return FALSE;
+}
+
+// INTERNAL
+// Frees memory for item(s) and their resources
+BOOL FreeIRS(LPIRS lpIRS, HANDLE hProcess)
 {
 	return
-		(lpDesktop->resource.lpItems
-			= VirtualAlloc(
-				NULL,
-				sizeof(LVITEMW) * lpDesktop->dwItemCount,
-				MEM_RESERVE | MEM_COMMIT,
-				PAGE_READWRITE))
-		&&
-		(lpDesktop->resource.lpItemNames
-			= VirtualAlloc(
-				NULL,
-				sizeof(WCHAR) * MAX_PATH * lpDesktop->dwItemCount,
-				MEM_RESERVE | MEM_COMMIT,
-				PAGE_READWRITE));
+		VirtualFreeEx(hProcess, lpIRS->lpItems, 0, MEM_RELEASE) &&
+		VirtualFreeEx(hProcess, lpIRS->lpItemNames, 0, MEM_RELEASE) &&
+		VirtualFreeEx(hProcess, lpIRS->puColumnses, 0, MEM_RELEASE) &&
+		VirtualFreeEx(hProcess, lpIRS->piColFmts, 0, MEM_RELEASE);
 }
 
 // INTERNAL
@@ -66,104 +115,24 @@ HANDLE GetDesktopProcessHandle(LPDESKTOP lpDesktop)
 	DWORD	dwPID;
 
 	GetWindowThreadProcessId(lpDesktop->hwndListview, &dwPID);
-	return lpDesktop->resource.hProcess = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, dwPID);
+	return lpDesktop->resource.hProcessExplorer = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, dwPID);
 }
 
 // INTERNAL
-// Retrieves the array of LVITEM structures at the point
-// at which the function was called
-BOOL RequestItems(LPDESKTOP lpDesktop)
+BOOL GetItem(LPDESKTOP lpDesktop, LVITEMW item, DWORD index)
 {
-	DWORD	i;
-	BOOL	ret = TRUE;
-	LVITEMW	tempItem = { 0, };
+	
 
-	LPLVITEMW	lpTempItems;
-	LPWSTR		lpTempName;
 
-	if (!(lpTempItems = VirtualAllocEx(
-		lpDesktop->resource.hProcess,
-		NULL,
-		sizeof(LVITEMW) * lpDesktop->dwItemCount,
-		MEM_RESERVE | MEM_COMMIT,
-		PAGE_READWRITE
-	)))
-	{
-		return FALSE;
-	}
-	else if (!(lpTempName = VirtualAllocEx(
-		lpDesktop->resource.hProcess,
-		NULL,
-		sizeof(WCHAR) * MAX_PATH,
-		MEM_RESERVE | MEM_COMMIT,
-		PAGE_READWRITE
-	)))
-	{
-		VirtualFreeEx(
-			lpDesktop->resource.hProcess,
-			lpTempItems,
-			0,
-			MEM_RELEASE
-		);
 
-		return FALSE;
-	}
 
-	tempItem.mask = LVIF_COLFMT | LVIF_COLUMNS | LVIF_GROUPID | LVIF_IMAGE | LVIF_INDENT | LVIF_PARAM | LVIF_STATE | LVIF_TEXT;
-	tempItem.iSubItem = 0;
-	tempItem.stateMask = -1;
-	tempItem.cchTextMax = MAX_PATH;
-	tempItem.pszText = lpTempName;
 
-	for (i = 0; i < lpDesktop->dwItemCount; i++)
-	{
-		tempItem.iItem = i;
+}
 
-		// Write a temporary LVITEM structure to the Desktop process
-		if (!WriteProcessMemory(
-			lpDesktop->resource.hProcess,
-			lpTempItems + i,
-			&tempItem,
-			sizeof(LVITEMW),
-			NULL
-		))
-		{
-			ret = FALSE;
-			break;
-		}
+// INTERNAL
+BOOL FillItem(LPDESKTOP lpDesktop)
+{
 
-		// Calls the macro
-		ListView_GetItem(lpDesktop->hwndListview, lpTempItems + i);
-
-		// Read item text and store on this process
-		if (!ReadProcessMemory(
-			lpDesktop->resource.hProcess,
-			lpTempName,
-			lpDesktop->resource.lpItemNames + MAX_PATH * i,
-			sizeof(WCHAR) * MAX_PATH,
-			NULL
-		))
-		{
-			ret = FALSE;
-			break;
-		}
-	}
-
-	if (!ReadProcessMemory(
-		lpDesktop->resource.hProcess,
-		lpTempItems,
-		lpDesktop->resource.lpItems,
-		sizeof(LVITEMW) * lpDesktop->dwItemCount,
-		NULL
-	))
-	{
-		ret = FALSE;
-	}
-
-	return
-		VirtualFreeEx(lpDesktop->resource.hProcess, lpTempItems, 0, MEM_RELEASE) &&
-		VirtualFreeEx(lpDesktop->resource.hProcess, lpTempName, 0, MEM_RELEASE) &&
-		ret;
 }
 
 /* ------------------------------------------------ */
@@ -179,7 +148,7 @@ BOOL DesktopInit(LPDESKTOP lpDesktop)
 	RetrieveTrivialInformation(lpDesktop);
 	
 	// Allocates memory to lpItems
-	if (!AllocateMemoryToItemArray(lpDesktop))
+	if (!AllocateIRS(&(lpDesktop->resource), GetCurrentProcess(), lpDesktop->dwItemCount))
 		return FALSE;
 
 	// Retreives handle to the Desktop process
@@ -187,7 +156,7 @@ BOOL DesktopInit(LPDESKTOP lpDesktop)
 	if (!GetDesktopProcessHandle(lpDesktop))
 		return FALSE;
 
-	if (!RequestItems(lpDesktop))
+	if (!FillItem(lpDesktop))
 		return FALSE;
 
 	return TRUE;
@@ -196,7 +165,6 @@ BOOL DesktopInit(LPDESKTOP lpDesktop)
 BOOL DesktopFree(LPDESKTOP lpDesktop)
 {
 	return
-		VirtualFree(lpDesktop->resource.lpItems, 0, MEM_RELEASE) &&
-		VirtualFree(lpDesktop->resource.lpItemNames, 0, MEM_RELEASE) &&
-		CloseHandle(lpDesktop->resource.hProcess);
+		FreeIRS(&(lpDesktop->resource), GetCurrentProcess()) &&
+		CloseHandle(lpDesktop->resource.hProcessExplorer);
 }

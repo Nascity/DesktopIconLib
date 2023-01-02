@@ -9,6 +9,21 @@
 
 /* ------------------------------------------------ */
 
+typedef struct tagINTERNALRESOURCESTRUCT
+{
+	// Handle to the Desktop process
+	HANDLE		hProcessExplorer;
+
+	// Array of LVITEMs
+	// NEVER USE THE pszText MEMBER
+	LPLVITEMW	lpItems;
+
+	LPWSTR		lpItemNames;
+
+	PUINT	puColumnses;
+	PINT	piColFmts;
+} IRS, *LPIRS;
+
 typedef struct tagDESKTOP
 {
 	// Handle to the Desktop ListView
@@ -21,17 +36,7 @@ typedef struct tagDESKTOP
 	BOOL		bSnapToGrid;
 
 	// Desktop resources which have to be released
-	struct unnamedstruct
-	{
-		// Handle to the Desktop process
-		HANDLE		hProcess;
-
-		// Array of LVITEMs
-		// NEVER USE THE pszText MEMBER
-		LPLVITEMW	lpItems;
-
-		LPWSTR		lpItemNames;
-	} resource;
+	IRS	resource;
 } DESKTOP, * LPDESKTOP;
 
 /* ------------------------------------ Desktop.c - */
