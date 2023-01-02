@@ -1,13 +1,7 @@
 
 /* ------------------------------------------------ */
 
-#include <stdio.h>
-
 #include "Desktop.h"
-
-/* ------------------------------------------------ */
-
-
 
 /* ------------------------------------------------ */
 
@@ -30,8 +24,6 @@ BOOL AllocateMemoryToItemArray(LPDESKTOP lpDesktop)
 				MEM_RESERVE | MEM_COMMIT,
 				PAGE_READWRITE));
 }
-
-/* ------------------------------------------------ */
 
 // INTERNAL
 // Function to find hwnd to the Desktop ListView
@@ -66,8 +58,6 @@ HANDLE GetDesktopProcessHandle(LPDESKTOP lpDesktop)
 	GetWindowThreadProcessId(lpDesktop->hwndListview, &dwPID);
 	return lpDesktop->resource.hProcess = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, dwPID);
 }
-
-/* ------------------------------------------------ */
 
 // INTERNAL
 // Retrieves the array of LVITEM structures at the point

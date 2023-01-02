@@ -18,7 +18,7 @@ typedef struct tagDESKTOP
 	DWORD		dwItemCount;
 
 	// Desktop resources which have to be released
-	struct unnamed
+	struct unnamedstruct
 	{
 		// Handle to the Desktop process
 		HANDLE		hProcess;
@@ -38,6 +38,10 @@ BOOL DesktopInit(LPDESKTOP pDesktop);
 
 // Frees memory allocated for DESKTOP structure
 BOOL DesktopFree(LPDESKTOP lpDesktop);
+
+/* ------------------------------------------------ */
+
+VOID Debug_PrintMembersByIndex(LPDESKTOP lpDesktop, INT index);
 
 /* ------------------------------------------------ */
 

@@ -4,7 +4,6 @@
 #include "Desktop.h"
 
 
-
 int main(void)
 {
 	DESKTOP dt;
@@ -12,12 +11,14 @@ int main(void)
 
 	_wsetlocale(LC_ALL, L"Korean");
 
-	printf("%d\n", DesktopInit(&dt));
+	DesktopInit(&dt);
 
 	for (i = 0; i < dt.dwItemCount; i++)
 	{
-		wprintf(L"%s\n", dt.resource.lpItemNames + MAX_PATH * i);
+		wprintf(L"---------------------------------------------------------------------\n");
+		Debug_PrintMembersByIndex(&dt, i);
 	}
+	wprintf(L"---------------------------------------------------------------------\n");
 
-	printf("%d\n", DesktopFree(&dt));
+	DesktopFree(&dt);
 }
