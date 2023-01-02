@@ -2,7 +2,7 @@
 #include <locale.h>
 
 #include "Desktop.h"
-#pragma comment(lib, "DesktopIcon.lib")
+#pragma comment(lib, "..\\x64\\release\\DesktopIcon.lib")
 
 
 

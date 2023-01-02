@@ -13,7 +13,8 @@
 //
 
 // INTERNAL
-POINT GetItemPos(DESKTOP desktop, INT index)
+// Change the return type to POINT
+VOID GetItemPos(DESKTOP desktop, INT index)
 {
 	// TODO: Implement
 }

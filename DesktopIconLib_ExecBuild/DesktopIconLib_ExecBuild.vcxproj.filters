@@ -27,9 +27,4 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <Library Include="test.lib">
-      <Filter>Library</Filter>
-    </Library>
-  </ItemGroup>
 </Project>

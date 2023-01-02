@@ -29,7 +29,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{f7b4d323-54d0-4b3d-a417-9b48e19710d9}</ProjectGuid>
+    <ProjectGuid>{32ded689-cd56-4d29-a6a8-2470aff53be8}</ProjectGuid>
     <RootNamespace>DesktopIconLibBuild</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>DesktopIconLib_LibBuild</ProjectName>
@@ -79,6 +79,22 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetName>DesktopIcon</TargetName>
+    <OutDir>..\DesktopIconLib_ExecBuild</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <TargetName>DesktopIcon</TargetName>
+    <OutDir>..\DesktopIconLib_ExecBuild</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>DesktopIcon</TargetName>
+    <OutDir>..\DesktopIconLib_ExecBuild</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>DesktopIcon</TargetName>
+    <OutDir>..\DesktopIconLib_ExecBuild</OutDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
