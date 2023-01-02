@@ -12,4 +12,10 @@
 // 
 //
 
+// INTERNAL
+POINT GetItemPos(DESKTOP desktop, INT index)
+{
+	// TODO: Implement
+}
+
 /* ------------------------------------------------ */
