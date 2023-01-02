@@ -15,16 +15,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Desktop.c">
+    <ClCompile Include="Debug.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Main.c">
+    <ClCompile Include="Desktop.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ItemInteraction.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Debug.c">
+    <ClCompile Include="Main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

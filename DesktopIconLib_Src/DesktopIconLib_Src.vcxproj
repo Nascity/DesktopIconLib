@@ -21,10 +21,9 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{2d526e9d-4b15-4349-80b5-6bef93384349}</ProjectGuid>
-    <RootNamespace>DesktopIconAPI</RootNamespace>
+    <ProjectGuid>{12f04d97-2671-4341-a2c3-b1555cc008de}</ProjectGuid>
+    <RootNamespace>DesktopIconLibSrc</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>DesktopIconLib</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
