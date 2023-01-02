@@ -6,6 +6,41 @@
 /* ------------------------------------------------ */
 
 // INTERNAL
+// Function to find hwnd to the Desktop ListView
+// Returns NULL when fails
+HWND FindDesktopListViewHwnd(VOID)
+{
+	HWND	hDesktop = GetDesktopWindow();
+
+	HWND	hShellDLL = 0;
+	HWND	hWorkerW = 0;
+	HWND	hListView = 0;
+
+	// Finding handle to SHELLDLL_DefView
+	if ((hShellDLL = FindWindowExW(FindWindowW(L"Progman", NULL), 0, L"SHELLDLL_DefView", NULL)) == 0)
+	{
+		do
+		{
+			hWorkerW = FindWindowExW(hDesktop, hWorkerW, L"WorkerW", NULL);
+			hShellDLL = FindWindowExW(hWorkerW, 0, L"SHELLDLL_DefView", NULL);
+		} while (!hShellDLL);
+	}
+
+	// Finding handle to the ListView and returns
+	return FindWindowExW(hShellDLL, 0, L"SysListView32", NULL);
+}
+
+// INTERNAL
+VOID RetrieveTrivialInformation(LPDESKTOP lpDesktop)
+{
+	// Retrieves item count
+	lpDesktop->dwItemCount = ListView_GetItemCount(lpDesktop->hwndListview);
+
+	// Query snap-to-grid
+	lpDesktop->bSnapToGrid = ListView_GetExtendedListViewStyle(lpDesktop->hwndListview) && LVS_EX_SNAPTOGRID;
+}
+
+// INTERNAL
 // Allocates memory for items array and their names
 BOOL AllocateMemoryToItemArray(LPDESKTOP lpDesktop)
 {
@@ -23,31 +58,6 @@ BOOL AllocateMemoryToItemArray(LPDESKTOP lpDesktop)
 				sizeof(WCHAR) * MAX_PATH * lpDesktop->dwItemCount,
 				MEM_RESERVE | MEM_COMMIT,
 				PAGE_READWRITE));
-}
-
-// INTERNAL
-// Function to find hwnd to the Desktop ListView
-// Returns NULL when fails
-HWND FindDesktopListViewHwnd(VOID)
-{
-	HWND	hDesktop = GetDesktopWindow();
-
-	HWND	hShellDLL = 0;
-	HWND	hWorkerW = 0;
-	HWND	hListView = 0;
-	
-	// Finding handle to SHELLDLL_DefView
-	if ((hShellDLL = FindWindowExW(FindWindowW(L"Progman", NULL), 0, L"SHELLDLL_DefView", NULL)) == 0)
-	{
-		do
-		{
-			hWorkerW = FindWindowExW(hDesktop, hWorkerW, L"WorkerW", NULL);
-			hShellDLL = FindWindowExW(hWorkerW, 0, L"SHELLDLL_DefView", NULL);
-		} while (!hShellDLL);
-	}
-
-	// Finding handle to the ListView and returns
-	return FindWindowExW(hShellDLL, 0, L"SysListView32", NULL);
 }
 
 // INTERNAL
@@ -164,9 +174,10 @@ BOOL DesktopInit(LPDESKTOP lpDesktop)
 	if (!(lpDesktop->hwndListview = FindDesktopListViewHwnd()))
 		return FALSE;
 
-	// Retrieves item count
-	lpDesktop->dwItemCount = ListView_GetItemCount(lpDesktop->hwndListview);
-
+	// Fetches information
+	// DO NOT MOVE THIS LINE
+	RetrieveTrivialInformation(lpDesktop);
+	
 	// Allocates memory to lpItems
 	if (!AllocateMemoryToItemArray(lpDesktop))
 		return FALSE;

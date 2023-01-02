@@ -17,6 +17,9 @@ typedef struct tagDESKTOP
 	// Item count
 	DWORD		dwItemCount;
 
+	// Is snap-to-grid on?
+	BOOL		bSnapToGrid;
+
 	// Desktop resources which have to be released
 	struct unnamedstruct
 	{
@@ -31,7 +34,7 @@ typedef struct tagDESKTOP
 	} resource;
 } DESKTOP, * LPDESKTOP;
 
-/* ------------------------------------------------ */
+/* ------------------------------------ Desktop.c - */
 
 // Initialize DESKTOP structrue
 BOOL DesktopInit(LPDESKTOP pDesktop);
@@ -39,9 +42,15 @@ BOOL DesktopInit(LPDESKTOP pDesktop);
 // Frees memory allocated for DESKTOP structure
 BOOL DesktopFree(LPDESKTOP lpDesktop);
 
-/* ------------------------------------------------ */
+/* ---------------------------- ItemInteraction.c - */
 
-VOID Debug_PrintMembersByIndex(LPDESKTOP lpDesktop, INT index);
+
+
+/* -------------------------------------- Debug.c - */
+
+VOID Debug_PrintDesktopAttributes(DESKTOP desktop);
+
+VOID Debug_PrintMembersByIndex(DESKTOP desktop, INT index);
 
 /* ------------------------------------------------ */
 
