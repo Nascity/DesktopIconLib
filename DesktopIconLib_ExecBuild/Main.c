@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <locale.h>
 
-#include "Desktop.h"
+#include "..\DesktopIconLib_Src\Desktop.h"
 #pragma comment(lib, "DesktopIcon.lib")
 
 
