@@ -1,8 +1,1 @@
-# Desktop Icon Library
-WIP
-
-## Usage
-WIP
-
-## Licence
-[GNU General Public License v3.0](/LICENCE)
+A simple test branch to see if the library is working as intended
