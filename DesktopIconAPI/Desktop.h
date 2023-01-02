@@ -23,7 +23,8 @@ typedef struct tagDESKTOP
 		// Handle to the Desktop process
 		HANDLE		hProcess;
 
-		// Points to the memory for items allocated in the Desktop process
+		// Array of LVITEMs
+		// NEVER USE THE pszText MEMBER
 		LPLVITEMW	lpItems;
 
 		LPWSTR		lpItemNames;
