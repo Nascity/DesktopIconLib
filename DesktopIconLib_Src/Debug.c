@@ -6,12 +6,18 @@
 
 /* ------------------------------------------------ */
 
+#if !DESKTOP_USE_DEBUG_FUNCTION
+static
+#endif
 VOID Debug_PrintDesktopAttributes(DESKTOP desktop)
 {
 	wprintf(L"%-25s:%7d\n", L"Item count", desktop.dwItemCount);
 	wprintf(L"%-25s:%7s\n", L"Snap to grid is on", desktop.bSnapToGrid ? L"TRUE" : L"FALSE");
 }
 
+#if !DESKTOP_USE_DEBUG_FUNCTION
+static
+#endif
 VOID Debug_PrintMembersByIndex(DESKTOP desktop, INT index)
 {
 	LVITEMW	item = desktop.resource.lpItems[index];

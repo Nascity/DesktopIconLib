@@ -9,6 +9,12 @@
 
 /* ------------------------------------------------ */
 
+#define DESKTOP_USE_DEBUG_FUNCTION	TRUE
+
+#define DESKTOP_INTERNAL
+
+/* ------------------------------------------------ */
+
 typedef struct tagINTERNALRESOURCESTRUCT
 {
 	// Handle to the Desktop process
@@ -52,8 +58,14 @@ BOOL DesktopFree(LPDESKTOP lpDesktop);
 
 /* -------------------------------------- Debug.c - */
 
+#if !DESKTOP_USE_DEBUG_FUNCTION
+static
+#endif
 VOID Debug_PrintDesktopAttributes(DESKTOP desktop);
 
+#if !DESKTOP_USE_DEBUG_FUNCTION
+static
+#endif
 VOID Debug_PrintMembersByIndex(DESKTOP desktop, INT index);
 
 /* ------------------------------------------------ */
