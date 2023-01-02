@@ -14,8 +14,7 @@ typedef struct tagINTERNALRESOURCESTRUCT
 	// Handle to the Desktop process
 	HANDLE		hProcessExplorer;
 
-	// Array of LVITEMs
-	// NEVER USE THE pszText MEMBER
+	// Destination
 	LPLVITEMW	lpItems;
 
 	LPWSTR		lpItemNames;
