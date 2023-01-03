@@ -37,16 +37,13 @@ typedef struct tagDESKTOP
 	// Item count
 	DWORD		dwItemCount;
 
-	// Is snap-to-grid on?
-	BOOL		bSnapToGrid;
-
 	// Desktop resources which have to be released
 	IRS	resource;
 } DESKTOP, * LPDESKTOP;
 
 /* ------------------------------------ Desktop.c - */
 
-// Initialize DESKTOP structrue
+// Initializes DESKTOP structrue
 BOOL DesktopInit(LPDESKTOP pDesktop);
 
 // Frees memory allocated for DESKTOP structure
@@ -54,7 +51,11 @@ BOOL DesktopFree(LPDESKTOP lpDesktop);
 
 /* ---------------------------- ItemInteraction.c - */
 
+// Toggles the item snap-to-grid state
+VOID ToggleItemSnapToGridState(LPDESKTOP lpDesktop);
 
+// Sets the item snap-to-grid state
+BOOL SetItemSnapToGridState(LPDESKTOP lpDesktop, BOOL state);
 
 /* -------------------------------------- Debug.c - */
 
@@ -67,6 +68,11 @@ VOID Debug_PrintDesktopAttributes(DESKTOP desktop);
 static
 #endif
 VOID Debug_PrintMembersByIndex(DESKTOP desktop, INT index);
+
+#if !DESKTOP_USE_DEBUG_FUNCTION
+static
+#endif
+VOID Debug_PrintInteger(INT integer);
 
 /* ------------------------------------------------ */
 

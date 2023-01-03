@@ -7,7 +7,6 @@
 
 /* ------------------------------------------------ */
 
-extern BOOL GetItem(LPDESKTOP lpDesktop, DWORD index);
 extern BOOL FillItem(LPDESKTOP lpDesktop);
 
 extern BOOL AllocateIRS(LPIRS lpIRS, HANDLE hProcess, DWORD itemcount);
@@ -54,9 +53,6 @@ VOID RetrieveTrivialInformation(LPDESKTOP lpDesktop)
 {
 	// Retrieves item count
 	lpDesktop->dwItemCount = ListView_GetItemCount(lpDesktop->hwndListview);
-
-	// Query snap-to-grid
-	lpDesktop->bSnapToGrid = ListView_GetExtendedListViewStyle(lpDesktop->hwndListview) && LVS_EX_SNAPTOGRID;
 }
 
 /* ------------------------------------------------ */

@@ -12,7 +12,6 @@ static
 VOID Debug_PrintDesktopAttributes(DESKTOP desktop)
 {
 	wprintf(L"%-25s:%7d\n", L"Item count", desktop.dwItemCount);
-	wprintf(L"%-25s:%7s\n", L"Snap to grid is on", desktop.bSnapToGrid ? L"TRUE" : L"FALSE");
 }
 
 #if !DESKTOP_USE_DEBUG_FUNCTION
@@ -37,6 +36,14 @@ VOID Debug_PrintMembersByIndex(DESKTOP desktop, INT index)
 	wprintf(L"%-8s%-12s%u\n", L"PUINT", L"puColumns", desktop.resource.puColumnses[index]);
 	wprintf(L"%-8s%-12s%d\n", L"int*", L"piColFmt", desktop.resource.piColFmts[index]);
 	wprintf(L"%-8s%-12s%d\n", L"int", L"iGroup", item.iGroup);
+}
+
+#if !DESKTOP_USE_DEBUG_FUNCTION
+static
+#endif
+VOID Debug_PrintInteger(INT integer)
+{
+	wprintf(L"%d\n", integer);
 }
 
 /* ------------------------------------------------ */

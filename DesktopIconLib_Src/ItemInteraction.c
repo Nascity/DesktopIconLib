@@ -170,3 +170,20 @@ BOOL FillItem(LPDESKTOP lpDesktop)
 }
 
 /* ------------------------------------------------ */
+
+extern VOID RetrieveTrivialInformation(LPDESKTOP lpDesktop);
+
+VOID ToggleItemSnapToGridState(LPDESKTOP lpDesktop)
+{
+	Debug_PrintInteger(ListView_SetExtendedListViewStyle(
+		lpDesktop->hwndListview,
+		ListView_GetExtendedListViewStyle(lpDesktop->hwndListview) ^ LVS_EX_AUTOAUTOARRANGE
+	) ^ LVS_EX_AUTOAUTOARRANGE);
+}
+
+BOOL SetItemSnapToGridState(LPDESKTOP lpDesktop, BOOL state)
+{
+
+
+	return TRUE;
+}
