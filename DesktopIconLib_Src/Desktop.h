@@ -13,11 +13,6 @@
 
 /* ------------------------------------------------ */
 
-#define INTERNAL
-#define NOT_IMPLEMENTED	static
-
-/* ------------------------------------------------ */
-
 typedef struct tagINTERNALRESOURCESTRUCT
 {
 	// Destination
@@ -29,48 +24,61 @@ typedef struct tagINTERNALRESOURCESTRUCT
 
 typedef struct tagDESKTOP
 {
-	// Handle to the Desktop ListView
 	HWND	hwndListview;
-	// Handle to the Desktop process
 	HANDLE	hProcessExplorer;
-	// Item count
+
 	DWORD	dwItemCount;
-	// Desktop resources which have to be released
+	WORD	wHorizSpacing;
+	WORD	wVertiSpacing;
+
 	IRS		resource;
 } DESKTOP, * LPDESKTOP;
 
+/* ------------------------------------------------ */
+
+typedef enum { left, up, right, down } DIRECTION;
+
 /* ------------------------------------ Desktop.c - */
 
-// Initializes DESKTOP structrue
-BOOL DesktopInit(LPDESKTOP pDesktop);
-
-// Frees memory allocated for DESKTOP structure
-BOOL DesktopFree(LPDESKTOP lpDesktop);
+BOOL	DesktopInit(LPDESKTOP pDesktop);
+BOOL	DesktopFree(LPDESKTOP lpDesktop);
 
 /* ---------------------------- ItemInteraction.c - */
 
-LPWSTR GetItemNameFromIndex(LPDESKTOP lpDesktop, INT index);
+LPWSTR	GetItemNameFromIndex(DESKTOP desktop, INT index);
 
-BOOL GetItemPositionFromIndex(LPDESKTOP lpDesktop, LPPOINT lpPoint, INT index);
+BOOL	GetItemPositionFromIndex(DESKTOP desktop, INT index, LPPOINT lpPoint);
+BOOL	GetItemPositionFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, LPPOINT lpPoint);
+#define	GetItemPositionFromTextM(desktop, lpText, lpPoint)	GetItemPositionFromText(desktop, lpText, sizeof(lpText), lpPoint)
 
-BOOL GetItemPositionFromText(LPDESKTOP lpDesktop, LPPOINT lpPoint, LPCWSTR lpText, SIZE_T size);
+BOOL	SetItemPositionFromIndex(DESKTOP desktop, INT index, POINT point);
+BOOL	SetItemPositionFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, POINT point);
+#define	SetItemPositionFromTextM(desktop, lpText, point)	SetItemPositionFromText(desktop, lpText, sizeof(lpText), point)
+
+BOOL	MoveItemCpixelFromIndex(DESKTOP desktop, INT index, DIRECTION direction, INT Cpixel);
+BOOL	MoveItemCpixelFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, DIRECTION direction, INT Cpixel);
+#define	MoveItemCpixelFromTextM(desktop, lpText, direction, Cpixel)	MoveItemCpixelFromText(desktop, lpText, sizeof(lpText), direction, Cpixel)
+
+BOOL	MoveItemCcellFromIndex(DESKTOP desktop, INT index, DIRECTION direction, INT Ccell);
+BOOL	MoveItemCcellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, DIRECTION direction, INT Ccell);
+#define	MoveItemCcellFromTextM(desktop, lpText, direction, Ccell)	MoveItemCcellFromText(desktop, lpText, sizeof(lpText), direction, Ccell)
 
 /* -------------------------------------- Debug.c - */
 
 #if !DESKTOP_USE_DEBUG_FUNCTION
 static
 #endif
-VOID Debug_PrintDesktopAttributes(DESKTOP desktop);
+VOID	Debug_PrintMembersByIndex(DESKTOP desktop, INT index);
 
 #if !DESKTOP_USE_DEBUG_FUNCTION
 static
 #endif
-VOID Debug_PrintMembersByIndex(DESKTOP desktop, INT index);
+VOID	Debug_PrintInteger(INT integer);
 
-#if !DESKTOP_USE_DEBUG_FUNCTION
-static
-#endif
-VOID Debug_PrintInteger(INT integer);
+/* ------------------------------------------------ */
+
+#define INTERNAL
+#define NOT_IMPLEMENTED	static
 
 /* ------------------------------------------------ */
 

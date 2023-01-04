@@ -3,19 +3,15 @@
 
 #include "Desktop.h"
 
-
-
 int main(void)
 {
 	DESKTOP dt;
-	POINT pt;
 
 	_wsetlocale(LC_ALL, L"Korean");
 
 	if (DesktopInit(&dt))
 	{
-		if (GetItemPositionFromIndex(&dt, &pt, 0))
-			wprintf(L"(%d, %d)", pt.x, pt.y);
+		MoveItemCcellFromIndex(dt, 0, right, 5);
 	}
 	DesktopFree(&dt);
 

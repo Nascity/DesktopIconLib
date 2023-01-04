@@ -75,13 +75,13 @@ BOOL FreeIRS(LPIRS lpIRS, HANDLE hProcess)
 }
 
 INTERNAL
-BOOL SendMessageWithResource(LPDESKTOP lpDesktop, UINT msg, WPARAM wParam, LPVOID res, SIZE_T size)
+BOOL SendMessageWithResource(DESKTOP desktop, UINT msg, WPARAM wParam, LPVOID res, SIZE_T size)
 {
 	LPVOID	mem;
 	BOOL	ret = FALSE;
 
 	if (!(mem = VirtualAllocEx(
-		lpDesktop->hProcessExplorer,
+		desktop.hProcessExplorer,
 		NULL,
 		size,
 		MEM_RESERVE | MEM_COMMIT,
@@ -91,20 +91,20 @@ BOOL SendMessageWithResource(LPDESKTOP lpDesktop, UINT msg, WPARAM wParam, LPVOI
 
 	ret =
 		WriteProcessMemory(
-			lpDesktop->hProcessExplorer,
+			desktop.hProcessExplorer,
 			mem,
 			res,
 			size,
 			NULL
 		) &&
 		SendMessageW(
-			lpDesktop->hwndListview,
+			desktop.hwndListview,
 			msg,
 			wParam,
 			(LPARAM)mem
 		) &&
 		ReadProcessMemory(
-			lpDesktop->hProcessExplorer,
+			desktop.hProcessExplorer,
 			mem,
 			res,
 			size,
@@ -112,7 +112,7 @@ BOOL SendMessageWithResource(LPDESKTOP lpDesktop, UINT msg, WPARAM wParam, LPVOI
 		);
 
 	return VirtualFreeEx(
-		lpDesktop->hProcessExplorer,
+		desktop.hProcessExplorer,
 		mem,
 		0,
 		MEM_RELEASE
@@ -171,7 +171,7 @@ BOOL GetItem(LPDESKTOP lpDesktop, DWORD index)
 			ReadProcessMemory(
 				lpDesktop->hProcessExplorer,
 				irsTemp.lpItemNames,
-				GetItemNameFromIndex(lpDesktop, index),
+				GetItemNameFromIndex(*lpDesktop, index),
 				sizeof(WCHAR) * MAX_PATH,
 				NULL) &&
 			ReadProcessMemory(
@@ -218,13 +218,13 @@ BOOL FillItem(LPDESKTOP lpDesktop)
 /* ------------------------------------------------ */
 
 INTERNAL
-INT FindItemIndexFromText(LPDESKTOP lpDesktop, LPCWSTR lpText, SIZE_T size)
+INT FindItemIndexFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size)
 {
 	INT i;
 
-	for (i = 0; i < (INT)lpDesktop->dwItemCount; i++)
+	for (i = 0; i < (INT)desktop.dwItemCount; i++)
 	{
-		if (RtlCompareMemory(GetItemNameFromIndex(lpDesktop, i), lpText, size) == size)
+		if (RtlCompareMemory(GetItemNameFromIndex(desktop, i), lpText, size) == size)
 			return i;
 	}
 
@@ -233,16 +233,15 @@ INT FindItemIndexFromText(LPDESKTOP lpDesktop, LPCWSTR lpText, SIZE_T size)
 
 /* ------------------------------------------------ */
 
-LPWSTR GetItemNameFromIndex(LPDESKTOP lpDesktop, INT index)
+LPWSTR GetItemNameFromIndex(DESKTOP desktop, INT index)
 {
-	return lpDesktop->resource.lpItemNames + MAX_PATH * index;
+	return desktop.resource.lpItemNames + MAX_PATH * index;
 }
 
-
-BOOL GetItemPositionFromIndex(LPDESKTOP lpDesktop, LPPOINT lpPoint, INT index)
+BOOL GetItemPositionFromIndex(DESKTOP desktop, INT index, LPPOINT lpPoint)
 {
 	return SendMessageWithResource(
-		lpDesktop,
+		desktop,
 		LVM_GETITEMPOSITION,
 		(WPARAM)index,
 		lpPoint,
@@ -250,12 +249,99 @@ BOOL GetItemPositionFromIndex(LPDESKTOP lpDesktop, LPPOINT lpPoint, INT index)
 	);
 }
 
-BOOL GetItemPositionFromText(LPDESKTOP lpDesktop, LPPOINT lpPoint, LPCWSTR lpText, SIZE_T size)
+BOOL GetItemPositionFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, LPPOINT lpPoint)
 {
 	INT index;
 
-	if ((index = FindItemIndexFromText(lpDesktop, lpText, size)) == -1)
+	if ((index = FindItemIndexFromText(desktop, lpText, size)) == -1)
 		return FALSE;
 
-	return GetItemPositionFromIndex(lpDesktop, lpPoint, index);
+	return GetItemPositionFromIndex(desktop, index, lpPoint);
 }
+
+BOOL SetItemPositionFromIndex(DESKTOP desktop, INT index, POINT point)
+{
+	return ListView_SetItemPosition(
+		desktop.hwndListview,
+		index,
+		point.x,
+		point.y
+	);
+}
+
+BOOL SetItemPositionFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, POINT point)
+{
+	INT index;
+
+	if ((index = FindItemIndexFromText(desktop, lpText, size)) == -1)
+		return FALSE;
+
+	return SetItemPositionFromIndex(desktop, index, point);
+}
+
+/* ------------------------------------------------ */
+
+BOOL MoveItemCpixelFromIndex(DESKTOP desktop, INT index, DIRECTION direction, INT Cpixel)
+{
+	INT		horizontalMultiplier = 0;
+	INT		verticalMultiplier = 0;
+	POINT	ptCurrent;
+
+	switch (direction)
+	{
+	case left:
+		horizontalMultiplier = -1;
+		verticalMultiplier = 0;
+		break;
+	case up:
+		horizontalMultiplier = 0;
+		verticalMultiplier = -1;
+		break;
+	case right:
+		horizontalMultiplier = 1;
+		verticalMultiplier = 0;
+		break;
+	case down:
+		horizontalMultiplier = 0;
+		verticalMultiplier = 1;
+		break;
+	}
+
+	if (!GetItemPositionFromIndex(desktop, index, &ptCurrent))
+		return FALSE;
+
+	ptCurrent.x += Cpixel * horizontalMultiplier;
+	ptCurrent.y += Cpixel * verticalMultiplier;
+
+	return SetItemPositionFromIndex(desktop, index, ptCurrent);
+}
+
+BOOL MoveItemCpixelFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, DIRECTION direction, INT Cpixel)
+{
+	INT index;
+
+	if ((index = FindItemIndexFromText(desktop, lpText, size)) == -1)
+		return FALSE;
+
+	return MoveItemCpixelFromIndex(desktop, index, direction, Cpixel);
+}
+
+BOOL MoveItemCcellFromIndex(DESKTOP desktop, INT index, DIRECTION direction, INT Ccell)
+{
+	if (direction == left || direction == right)
+		return MoveItemCpixelFromIndex(desktop, index, direction, desktop.wHorizSpacing * Ccell);
+	else
+		return MoveItemCpixelFromIndex(desktop, index, direction, desktop.wVertiSpacing * Ccell);
+}
+
+BOOL MoveItemCcellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, DIRECTION direction, INT Ccell)
+{
+	INT index;
+
+	if ((index = FindItemIndexFromText(desktop, lpText, size)) == -1)
+		return FALSE;
+
+	return MoveItemCcellFromIndex(desktop, index, direction, Ccell);
+}
+
+/* ------------------------------------------------ */
