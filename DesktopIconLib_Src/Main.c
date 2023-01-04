@@ -3,6 +3,8 @@
 
 #include "Desktop.h"
 
+extern BOOL TestFunc(DESKTOP desktop, LPPOINT lppt);
+
 int main(void)
 {
 	DESKTOP dt;
@@ -11,7 +13,7 @@ int main(void)
 
 	if (DesktopInit(&dt))
 	{
-		MoveItemCcellFromIndex(dt, 0, right, 5);
+		// I was too lazy
 	}
 	DesktopFree(&dt);
 

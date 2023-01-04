@@ -34,9 +34,11 @@ typedef struct tagDESKTOP
 	IRS		resource;
 } DESKTOP, * LPDESKTOP;
 
+typedef POINT CELL;
+
 /* ------------------------------------------------ */
 
-typedef enum { left, up, right, down } DIRECTION;
+typedef enum { left = 0, up, right, down } DIRECTION;
 
 /* ------------------------------------ Desktop.c - */
 
@@ -54,6 +56,14 @@ BOOL	GetItemPositionFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, LPPOI
 BOOL	SetItemPositionFromIndex(DESKTOP desktop, INT index, POINT point);
 BOOL	SetItemPositionFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, POINT point);
 #define	SetItemPositionFromTextM(desktop, lpText, point)	SetItemPositionFromText(desktop, lpText, sizeof(lpText), point)
+
+BOOL	SetItemCellFromIndex(DESKTOP desktop, INT index, CELL cell);
+BOOL	SetItemCellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, CELL cell);
+#define SetItemCellFromTextM(desktop, lpText, cell)		SetItemCellFromText(desktop, lpText, sizeof(lpText), cell)
+
+BOOL	SetItemCellFromIndex(DESKTOP desktop, INT index, CELL cell);
+BOOL	SetItemCellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, CELL cell);
+#define	SetItemCellFromTextM(desktop, lpText, cell)		SetItemCellFromText(desktop, lpText, sizeof(lpText), cell)
 
 BOOL	MoveItemCpixelFromIndex(DESKTOP desktop, INT index, DIRECTION direction, INT Cpixel);
 BOOL	MoveItemCpixelFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, DIRECTION direction, INT Cpixel);

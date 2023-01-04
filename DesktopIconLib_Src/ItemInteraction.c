@@ -279,6 +279,22 @@ BOOL SetItemPositionFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, POINT
 	return SetItemPositionFromIndex(desktop, index, point);
 }
 
+NOT_IMPLEMENTED
+BOOL SetItemCellFromIndex(DESKTOP desktop, INT index, CELL cell)
+{
+	return FALSE;
+}
+
+BOOL SetItemCellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, CELL cell)
+{
+	INT index;
+
+	if ((index = FindItemIndexFromText(desktop, lpText, size)) == -1)
+		return FALSE;
+
+	return SetItemCellFromIndex(desktop, index, cell);
+}
+
 /* ------------------------------------------------ */
 
 BOOL MoveItemCpixelFromIndex(DESKTOP desktop, INT index, DIRECTION direction, INT Cpixel)
@@ -345,3 +361,14 @@ BOOL MoveItemCcellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, DIRECTI
 }
 
 /* ------------------------------------------------ */
+
+BOOL TestFunc(DESKTOP desktop, LPPOINT lppt)
+{
+	return SendMessageWithResource(
+		desktop,
+		LVM_GETORIGIN,
+		0,
+		lppt,
+		sizeof(POINT)
+	);
+}
