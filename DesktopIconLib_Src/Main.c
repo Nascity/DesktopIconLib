@@ -2,27 +2,20 @@
 #include <locale.h>
 
 #include "Desktop.h"
-#pragma comment(lib, "..\\x64\\release\\DesktopIcon.lib")
 
 
 
 int main(void)
 {
 	DESKTOP dt;
-	DWORD	i;
+	POINT pt;
 
 	_wsetlocale(LC_ALL, L"Korean");
 
 	if (DesktopInit(&dt))
 	{
-		wprintf(L"-------------------------------------------------------\n");
-		Debug_PrintDesktopAttributes(dt);
-		wprintf(L"-------------------------------------------------------\n");
-		for (i = 0; i < dt.dwItemCount; i++)
-		{
-			Debug_PrintMembersByIndex(dt, i);
-			wprintf(L"-------------------------------------------------------\n");
-		}
+		if (GetItemPositionFromIndex(&dt, &pt, 0))
+			wprintf(L"(%d, %d)", pt.x, pt.y);
 	}
 	DesktopFree(&dt);
 
