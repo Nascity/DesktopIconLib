@@ -1,8 +1,6 @@
 
 /* ------------------------------------------------ */
 
-#include <stdio.h>
-
 #include "Desktop.h"
 
 /* ------------------------------------------------ */
@@ -16,7 +14,7 @@ extern BOOL FreeIRS(LPIRS lpIRS, HANDLE hProcess);
 
 // Function to find hwnd to the Desktop ListView
 // Returns NULL when fails
-DESKTOP_INTERNAL
+INTERNAL
 HWND FindDesktopListViewHwnd(VOID)
 {
 	HWND	hDesktop = GetDesktopWindow();
@@ -39,16 +37,16 @@ HWND FindDesktopListViewHwnd(VOID)
 	return FindWindowExW(hShellDLL, 0, L"SysListView32", NULL);
 }
 
-DESKTOP_INTERNAL
+INTERNAL
 HANDLE GetDesktopProcessHandle(LPDESKTOP lpDesktop)
 {
 	DWORD	dwPID;
 
 	GetWindowThreadProcessId(lpDesktop->hwndListview, &dwPID);
-	return lpDesktop->resource.hProcessExplorer = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, dwPID);
+	return lpDesktop->hProcessExplorer = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, dwPID);
 }
 
-DESKTOP_INTERNAL
+INTERNAL
 VOID RetrieveTrivialInformation(LPDESKTOP lpDesktop)
 {
 	// Retrieves item count
@@ -86,5 +84,5 @@ BOOL DesktopFree(LPDESKTOP lpDesktop)
 {
 	return
 		FreeIRS(&(lpDesktop->resource), GetCurrentProcess()) &&
-		CloseHandle(lpDesktop->resource.hProcessExplorer);
+		CloseHandle(lpDesktop->hProcessExplorer);
 }

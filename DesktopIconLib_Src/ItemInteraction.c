@@ -8,7 +8,7 @@
 // Allocates memory for item(s) and their resources
 // If allocating for DESKTOP, itemcount = lpDesktop->dwItemCount
 // If allocating for explorer.exe, itemcount = 1
-DESKTOP_INTERNAL
+INTERNAL
 BOOL AllocateIRS(LPIRS lpIRS, HANDLE hProcess, DWORD itemcount)
 {
 	// For item(s)
@@ -64,7 +64,7 @@ BOOL AllocateIRS(LPIRS lpIRS, HANDLE hProcess, DWORD itemcount)
 }
 
 // Frees memory for item(s) and their resources
-DESKTOP_INTERNAL
+INTERNAL
 BOOL FreeIRS(LPIRS lpIRS, HANDLE hProcess)
 {
 	return
@@ -74,9 +74,62 @@ BOOL FreeIRS(LPIRS lpIRS, HANDLE hProcess)
 		VirtualFreeEx(hProcess, lpIRS->piColFmts, 0, MEM_RELEASE);
 }
 
+INTERNAL
+BOOL SendMessageWithResource(LPDESKTOP lpDesktop, UINT msg, WPARAM wParam, LPVOID res, SIZE_T size)
+{
+	LPVOID	mem;
+	BOOL	ret = FALSE;
+
+	if (!(mem = VirtualAllocEx(
+		lpDesktop->hProcessExplorer,
+		NULL,
+		size,
+		MEM_RESERVE | MEM_COMMIT,
+		PAGE_READWRITE
+	)))
+		return FALSE;
+
+	ret =
+		WriteProcessMemory(
+			lpDesktop->hProcessExplorer,
+			mem,
+			res,
+			size,
+			NULL
+		) &&
+		SendMessageW(
+			lpDesktop->hwndListview,
+			msg,
+			wParam,
+			mem
+		) &&
+		ReadProcessMemory(
+			lpDesktop->hProcessExplorer,
+			mem,
+			res,
+			size,
+			NULL
+		);
+
+	return VirtualFreeEx(
+		lpDesktop->hProcessExplorer,
+		mem,
+		0,
+		MEM_RELEASE
+	) && ret;
+}
+
 /* ------------------------------------------------ */
 
-DESKTOP_INTERNAL
+INTERNAL
+LPWSTR ItemNameFromIndex(LPDESKTOP lpDesktop, INT index)
+{
+	return lpDesktop->resource.lpItemNames + MAX_PATH * index;
+}
+
+/* ------------------------------------------------ */
+
+INTERNAL
 BOOL GetItem(LPDESKTOP lpDesktop, DWORD index)
 {
 	LVITEMW		itemTemp = { 0, };
@@ -85,7 +138,7 @@ BOOL GetItem(LPDESKTOP lpDesktop, DWORD index)
 	BOOL	ret = FALSE;
 
 	// 1. Alloc mem
-	if (!AllocateIRS(&irsTemp, lpDesktop->resource.hProcessExplorer, 1))
+	if (!AllocateIRS(&irsTemp, lpDesktop->hProcessExplorer, 1))
 		return FALSE;
 
 	// 2. Write LVITEM
@@ -105,7 +158,7 @@ BOOL GetItem(LPDESKTOP lpDesktop, DWORD index)
 	// 3. Insert LVITEM
 	if (irsTemp.lpItemNames &&
 		WriteProcessMemory(
-			lpDesktop->resource.hProcessExplorer,
+			lpDesktop->hProcessExplorer,
 			irsTemp.lpItems,
 			&itemTemp,
 			sizeof(LVITEMW),
@@ -118,25 +171,25 @@ BOOL GetItem(LPDESKTOP lpDesktop, DWORD index)
 		// 5. Retrieve LVITEM
 		ret =
 			ReadProcessMemory(
-				lpDesktop->resource.hProcessExplorer,
+				lpDesktop->hProcessExplorer,
 				irsTemp.lpItems,
 				lpDesktop->resource.lpItems + index,
 				sizeof(LVITEMW),
 				NULL) &&
 			ReadProcessMemory(
-				lpDesktop->resource.hProcessExplorer,
+				lpDesktop->hProcessExplorer,
 				irsTemp.lpItemNames,
-				lpDesktop->resource.lpItemNames + index * MAX_PATH,
+				ItemNameFromIndex(lpDesktop, index),
 				sizeof(WCHAR) * MAX_PATH,
 				NULL) &&
 			ReadProcessMemory(
-				lpDesktop->resource.hProcessExplorer,
+				lpDesktop->hProcessExplorer,
 				irsTemp.puColumnses,
 				lpDesktop->resource.puColumnses + index,
 				sizeof(UINT),
 				NULL) &&
 			ReadProcessMemory(
-				lpDesktop->resource.hProcessExplorer,
+				lpDesktop->hProcessExplorer,
 				irsTemp.piColFmts,
 				lpDesktop->resource.piColFmts + index,
 				sizeof(INT),
@@ -144,10 +197,11 @@ BOOL GetItem(LPDESKTOP lpDesktop, DWORD index)
 	}
 
 	// 6. Free mem
-	return FreeIRS(&irsTemp, lpDesktop->resource.hProcessExplorer) && ret;
+	return FreeIRS(&irsTemp, lpDesktop->hProcessExplorer) && ret;
 }
 
-DESKTOP_INTERNAL
+INTERNAL
+NOT_IMPLEMENTED
 BOOL SetItem(LPDESKTOP lpDesktop, LVITEMW item)
 {
 	// TODO: Implement
@@ -155,7 +209,7 @@ BOOL SetItem(LPDESKTOP lpDesktop, LVITEMW item)
 	return FALSE;
 }
 
-DESKTOP_INTERNAL
+INTERNAL
 BOOL FillItem(LPDESKTOP lpDesktop)
 {
 	DWORD	i;
@@ -171,19 +225,39 @@ BOOL FillItem(LPDESKTOP lpDesktop)
 
 /* ------------------------------------------------ */
 
-extern VOID RetrieveTrivialInformation(LPDESKTOP lpDesktop);
-
-VOID ToggleItemSnapToGridState(LPDESKTOP lpDesktop)
+INTERNAL
+INT FindItemIndexFromText(LPDESKTOP lpDesktop, LPCWSTR lpText, SIZE_T size)
 {
-	Debug_PrintInteger(ListView_SetExtendedListViewStyle(
-		lpDesktop->hwndListview,
-		ListView_GetExtendedListViewStyle(lpDesktop->hwndListview) ^ LVS_EX_AUTOAUTOARRANGE
-	) ^ LVS_EX_AUTOAUTOARRANGE);
+	INT i;
+
+	for (i = 0; i < (INT)lpDesktop->dwItemCount; i++)
+	{
+		if (RtlCompareMemory(ItemNameFromIndex(lpDesktop, i), lpText, size) == size)
+			return i;
+	}
+
+	return -1;
 }
 
-BOOL SetItemSnapToGridState(LPDESKTOP lpDesktop, BOOL state)
+/* ------------------------------------------------ */
+
+BOOL GetItemPositionFromIndex(LPDESKTOP lpDesktop, LPPOINT lpPoint, INT index)
 {
+	return SendMessageWithResource(
+		lpDesktop,
+		LVM_GETITEMPOSITION,
+		(WPARAM)index,
+		lpPoint,
+		sizeof(POINT)
+	);
+}
 
+BOOL GetItemPositionFromText(LPDESKTOP lpDesktop, LPPOINT lpPoint, LPCWSTR lpText, SIZE_T size)
+{
+	INT index;
 
-	return TRUE;
+	if ((index = FindItemIndexFromText(lpDesktop, lpText, size)) == -1)
+		return FALSE;
+
+	return GetItemPositionFromIndex(lpDesktop, lpPoint, index);
 }

@@ -11,34 +11,32 @@
 
 #define DESKTOP_USE_DEBUG_FUNCTION	TRUE
 
-#define DESKTOP_INTERNAL
+/* ------------------------------------------------ */
+
+#define INTERNAL
+#define NOT_IMPLEMENTED	static
 
 /* ------------------------------------------------ */
 
 typedef struct tagINTERNALRESOURCESTRUCT
 {
-	// Handle to the Desktop process
-	HANDLE		hProcessExplorer;
-
 	// Destination
 	LPLVITEMW	lpItems;
-
 	LPWSTR		lpItemNames;
-
-	PUINT	puColumnses;
-	PINT	piColFmts;
+	PUINT		puColumnses;
+	PINT		piColFmts;
 } IRS, *LPIRS;
 
 typedef struct tagDESKTOP
 {
 	// Handle to the Desktop ListView
-	HWND		hwndListview;
-
+	HWND	hwndListview;
+	// Handle to the Desktop process
+	HANDLE	hProcessExplorer;
 	// Item count
-	DWORD		dwItemCount;
-
+	DWORD	dwItemCount;
 	// Desktop resources which have to be released
-	IRS	resource;
+	IRS		resource;
 } DESKTOP, * LPDESKTOP;
 
 /* ------------------------------------ Desktop.c - */
@@ -51,11 +49,9 @@ BOOL DesktopFree(LPDESKTOP lpDesktop);
 
 /* ---------------------------- ItemInteraction.c - */
 
-// Toggles the item snap-to-grid state
-VOID ToggleItemSnapToGridState(LPDESKTOP lpDesktop);
+BOOL GetItemPositionFromIndex(LPDESKTOP lpDesktop, LPPOINT lpPoint, INT index);
 
-// Sets the item snap-to-grid state
-BOOL SetItemSnapToGridState(LPDESKTOP lpDesktop, BOOL state);
+BOOL GetItemPositionFromText(LPDESKTOP lpDesktop, LPPOINT lpPoint, LPCWSTR lpText, SIZE_T size);
 
 /* -------------------------------------- Debug.c - */
 

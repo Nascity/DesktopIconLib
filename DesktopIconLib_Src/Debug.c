@@ -1,22 +1,24 @@
 
 /* ------------------------------------------------ */
 
-#include <stdio.h>
 #include "Desktop.h"
+#include <stdio.h>
 
 /* ------------------------------------------------ */
 
-#if !DESKTOP_USE_DEBUG_FUNCTION
-static
-#endif
+extern LPWSTR ItemNameFromIndex(LPDESKTOP lpDesktop, INT index);
+
+/* ------------------------------------------------ */
+
+DWORD Debug_LastError;
+
+/* ------------------------------------------------ */
+
 VOID Debug_PrintDesktopAttributes(DESKTOP desktop)
 {
 	wprintf(L"%-25s:%7d\n", L"Item count", desktop.dwItemCount);
 }
 
-#if !DESKTOP_USE_DEBUG_FUNCTION
-static
-#endif
 VOID Debug_PrintMembersByIndex(DESKTOP desktop, INT index)
 {
 	LVITEMW	item = desktop.resource.lpItems[index];
@@ -26,7 +28,7 @@ VOID Debug_PrintMembersByIndex(DESKTOP desktop, INT index)
 	wprintf(L"%-8s%-12s%d\n", L"int", L"iSubItem", item.iSubItem);
 	wprintf(L"%-8s%-12s%u\n", L"UINT", L"state", item.state);
 	wprintf(L"%-8s%-12s%u\n", L"UINT", L"stateMask", item.stateMask);
-	wprintf(L"%-8s%-12s%s\n", L"LPWSTR", L"pszText", desktop.resource.lpItemNames + MAX_PATH * index);
+	wprintf(L"%-8s%-12s%s\n", L"LPWSTR", L"pszText", ItemNameFromIndex(&desktop, index));
 	wprintf(L"%-8s%-12s%d\n", L"int", L"cchTextMax", item.cchTextMax);
 	wprintf(L"%-8s%-12s%d\n", L"int", L"iImage", item.iImage);
 	wprintf(L"%-8s%-12s%lld\n", L"LPARAM", L"lParam", item.lParam);
@@ -38,12 +40,14 @@ VOID Debug_PrintMembersByIndex(DESKTOP desktop, INT index)
 	wprintf(L"%-8s%-12s%d\n", L"int", L"iGroup", item.iGroup);
 }
 
-#if !DESKTOP_USE_DEBUG_FUNCTION
-static
-#endif
 VOID Debug_PrintInteger(INT integer)
 {
 	wprintf(L"%d\n", integer);
+}
+
+DWORD Debug_GetLastError(VOID)
+{
+	return Debug_LastError;
 }
 
 /* ------------------------------------------------ */
