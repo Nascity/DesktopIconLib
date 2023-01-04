@@ -61,10 +61,6 @@ BOOL	SetItemCellFromIndex(DESKTOP desktop, INT index, CELL cell);
 BOOL	SetItemCellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, CELL cell);
 #define SetItemCellFromTextM(desktop, lpText, cell)		SetItemCellFromText(desktop, lpText, sizeof(lpText), cell)
 
-BOOL	SetItemCellFromIndex(DESKTOP desktop, INT index, CELL cell);
-BOOL	SetItemCellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, CELL cell);
-#define	SetItemCellFromTextM(desktop, lpText, cell)		SetItemCellFromText(desktop, lpText, sizeof(lpText), cell)
-
 BOOL	MoveItemCpixelFromIndex(DESKTOP desktop, INT index, DIRECTION direction, INT Cpixel);
 BOOL	MoveItemCpixelFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, DIRECTION direction, INT Cpixel);
 #define	MoveItemCpixelFromTextM(desktop, lpText, direction, Cpixel)	MoveItemCpixelFromText(desktop, lpText, sizeof(lpText), direction, Cpixel)
