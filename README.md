@@ -1,4 +1,4 @@
-# Desktop Icon Library
+# Desktop Icon Library (WIP)
 I am writing this library to make it easier to interact with icons on the Desktop.
 
 
@@ -6,9 +6,9 @@ I am writing this library to make it easier to interact with icons on the Deskto
 ## Usage
 ```c
 #include "Desktop.h"
-#pragma comment(lib, "insert lib name here")
+#pragma comment(lib, "DesktopIcon.lib")
 ```
-To use the library, include `Desktop.h` and link the given `.lib` file.
+To use the library, include `Desktop.h` and link `DesktopIcon.lib`.
 
 WIP
 
