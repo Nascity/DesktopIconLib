@@ -101,7 +101,7 @@ BOOL SendMessageWithResource(LPDESKTOP lpDesktop, UINT msg, WPARAM wParam, LPVOI
 			lpDesktop->hwndListview,
 			msg,
 			wParam,
-			mem
+			(LPARAM)mem
 		) &&
 		ReadProcessMemory(
 			lpDesktop->hProcessExplorer,
