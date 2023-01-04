@@ -49,6 +49,8 @@ BOOL DesktopFree(LPDESKTOP lpDesktop);
 
 /* ---------------------------- ItemInteraction.c - */
 
+LPWSTR GetItemNameFromIndex(LPDESKTOP lpDesktop, INT index);
+
 BOOL GetItemPositionFromIndex(LPDESKTOP lpDesktop, LPPOINT lpPoint, INT index);
 
 BOOL GetItemPositionFromText(LPDESKTOP lpDesktop, LPPOINT lpPoint, LPCWSTR lpText, SIZE_T size);

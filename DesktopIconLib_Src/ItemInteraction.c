@@ -122,14 +122,6 @@ BOOL SendMessageWithResource(LPDESKTOP lpDesktop, UINT msg, WPARAM wParam, LPVOI
 /* ------------------------------------------------ */
 
 INTERNAL
-LPWSTR ItemNameFromIndex(LPDESKTOP lpDesktop, INT index)
-{
-	return lpDesktop->resource.lpItemNames + MAX_PATH * index;
-}
-
-/* ------------------------------------------------ */
-
-INTERNAL
 BOOL GetItem(LPDESKTOP lpDesktop, DWORD index)
 {
 	LVITEMW		itemTemp = { 0, };
@@ -179,7 +171,7 @@ BOOL GetItem(LPDESKTOP lpDesktop, DWORD index)
 			ReadProcessMemory(
 				lpDesktop->hProcessExplorer,
 				irsTemp.lpItemNames,
-				ItemNameFromIndex(lpDesktop, index),
+				GetItemNameFromIndex(lpDesktop, index),
 				sizeof(WCHAR) * MAX_PATH,
 				NULL) &&
 			ReadProcessMemory(
@@ -232,7 +224,7 @@ INT FindItemIndexFromText(LPDESKTOP lpDesktop, LPCWSTR lpText, SIZE_T size)
 
 	for (i = 0; i < (INT)lpDesktop->dwItemCount; i++)
 	{
-		if (RtlCompareMemory(ItemNameFromIndex(lpDesktop, i), lpText, size) == size)
+		if (RtlCompareMemory(GetItemNameFromIndex(lpDesktop, i), lpText, size) == size)
 			return i;
 	}
 
@@ -240,6 +232,12 @@ INT FindItemIndexFromText(LPDESKTOP lpDesktop, LPCWSTR lpText, SIZE_T size)
 }
 
 /* ------------------------------------------------ */
+
+LPWSTR GetItemNameFromIndex(LPDESKTOP lpDesktop, INT index)
+{
+	return lpDesktop->resource.lpItemNames + MAX_PATH * index;
+}
+
 
 BOOL GetItemPositionFromIndex(LPDESKTOP lpDesktop, LPPOINT lpPoint, INT index)
 {
