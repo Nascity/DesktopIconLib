@@ -49,8 +49,15 @@ HANDLE GetDesktopProcessHandle(LPDESKTOP lpDesktop)
 INTERNAL
 VOID RetrieveTrivialInformation(LPDESKTOP lpDesktop)
 {
+	DWORD	dwItemSpacingTemp;
+
 	// Retrieves item count
 	lpDesktop->dwItemCount = ListView_GetItemCount(lpDesktop->hwndListview);
+
+	// Retrieves horizontal and vertical spacing
+	dwItemSpacingTemp = ListView_GetItemSpacing(lpDesktop->hwndListview, FALSE);
+	lpDesktop->wHorizSpacing = LOWORD(dwItemSpacingTemp);
+	lpDesktop->wVertiSpacing = HIWORD(dwItemSpacingTemp);
 }
 
 /* ------------------------------------------------ */

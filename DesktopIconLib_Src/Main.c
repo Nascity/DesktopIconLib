@@ -3,19 +3,17 @@
 
 #include "Desktop.h"
 
-
+extern BOOL TestFunc(DESKTOP desktop, LPPOINT lppt);
 
 int main(void)
 {
 	DESKTOP dt;
-	POINT pt;
 
 	_wsetlocale(LC_ALL, L"Korean");
 
 	if (DesktopInit(&dt))
 	{
-		if (GetItemPositionFromIndex(&dt, &pt, 0))
-			wprintf(L"(%d, %d)", pt.x, pt.y);
+		// I was too lazy
 	}
 	DesktopFree(&dt);
 
