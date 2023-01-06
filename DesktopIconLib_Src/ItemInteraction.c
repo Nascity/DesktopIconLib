@@ -361,14 +361,3 @@ BOOL MoveItemCcellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, DIRECTI
 }
 
 /* ------------------------------------------------ */
-
-BOOL TestFunc(DESKTOP desktop, LPPOINT lppt)
-{
-	return SendMessageWithResource(
-		desktop,
-		LVM_GETORIGIN,
-		0,
-		lppt,
-		sizeof(POINT)
-	);
-}
