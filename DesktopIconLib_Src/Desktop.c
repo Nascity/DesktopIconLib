@@ -55,14 +55,23 @@ VOID RetrieveTrivialInformation(LPDESKTOP lpDesktop)
 	// Retrieves item count
 	lpDesktop->dwItemCount = ListView_GetItemCount(lpDesktop->hwndListview);
 
-	// Mystery number
-	lpDesktop->ptMysteryNumber.x = MYSTERY_NUMBER_X;
-	lpDesktop->ptMysteryNumber.y = MYSTERY_NUMBER_Y;
-
 	// Retrieves horizontal and vertical spacing
 	dwItemSpacingTemp = ListView_GetItemSpacing(lpDesktop->hwndListview, FALSE);
 	lpDesktop->wHorizSpacing = LOWORD(dwItemSpacingTemp);
 	lpDesktop->wVertiSpacing = HIWORD(dwItemSpacingTemp);
+}
+
+INTERNAL
+BOOL CalculateMysteryNumber(LPDESKTOP lpDesktop)
+{
+	POINT temp;
+
+	if (!GetItemPositionFromIndex(*lpDesktop, 0, &temp))
+		return FALSE;
+
+	lpDesktop->ptMysteryNumber.x = temp.x % lpDesktop->wHorizSpacing;
+	lpDesktop->ptMysteryNumber.y = temp.y % lpDesktop->wVertiSpacing;
+	return TRUE;
 }
 
 /* ------------------------------------------------ */
@@ -76,6 +85,9 @@ BOOL DesktopInit(LPDESKTOP lpDesktop)
 	// Fetches information
 	// DO NOT MOVE THIS LINE
 	RetrieveTrivialInformation(lpDesktop);
+
+	if (!(lpDesktop->dwItemCount))
+		return FALSE;
 	
 	// Allocates memory to lpItems
 	if (!AllocateIRS(&(lpDesktop->resource), GetCurrentProcess(), lpDesktop->dwItemCount))
@@ -88,6 +100,9 @@ BOOL DesktopInit(LPDESKTOP lpDesktop)
 
 	if (!FillItem(lpDesktop))
 		return FALSE;
+
+	// Calculates the mystery number
+	CalculateMysteryNumber(lpDesktop);
 
 	return TRUE;
 }
