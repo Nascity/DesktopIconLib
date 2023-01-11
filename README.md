@@ -32,5 +32,31 @@ I had to allocate memory on explorer.exe, write LVITEM structure containing the 
 
 
 
+- 'Mystery number'
+
+```c
+#include <stdio.h>
+#include "Desktop.h"
+
+int main(void)
+{
+	DESKTOP dt;
+	POINT	pt;
+
+	if (DesktopInit(&dt))
+	{
+		GetItemPositionFromTextM(dt, L"foo", &pt);
+		wprintf(L"foo: (%d, %d)\n", pt.x, pt.y);
+		GetItemPositionFromTextM(dt, L"bar", &pt);
+		wprintf(L"bar: (%d, %d)\n", pt.x, pt.y);
+	}
+	DesktopFree(&dt);
+
+	return 0;
+}
+```
+
+
+
 ## Licence
 [GNU General Public License v3.0](/LICENCE)
