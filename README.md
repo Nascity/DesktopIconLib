@@ -50,7 +50,7 @@ WIP
 ## Contributing
 
 1. Fork this repo. `gh repo fork --clone NatsciT/DesktopIconLib`
-2. Create new branch from [dev](https://github.com/NatsciT/DesktopIconLib/tree/dev) branch. Be sure to name the branch `dev/something`. `git checkout -b dev/something dev`
+2. Create new branch from [dev](https://github.com/NatsciT/DesktopIconLib/tree/dev) branch. `git checkout -b dev/something dev`
 3. Commit your changes. `git commit -m "commit message"`
 4. Push to the branch. `git push origin`
 5. Open PR. `gh pr create -B origin/dev -t "pr title" -b "pr body"`
