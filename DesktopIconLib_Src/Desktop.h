@@ -13,6 +13,18 @@
 
 /* ------------------------------------------------ */
 
+// I don't know what these are btw
+#define MYSTERY_NUMBER_X	21
+#define MYSTERY_NUMBER_Y	2
+
+/* ------------------------------------------------ */
+
+typedef struct tagCELL
+{
+	WORD	column;
+	WORD	row;
+} CELL;
+
 typedef struct tagINTERNALRESOURCESTRUCT
 {
 	// Destination
@@ -27,14 +39,15 @@ typedef struct tagDESKTOP
 	HWND	hwndListview;
 	HANDLE	hProcessExplorer;
 
+	CELL	cMaxCell;
+	POINT	ptMysteryNumber;
+
 	DWORD	dwItemCount;
 	WORD	wHorizSpacing;
 	WORD	wVertiSpacing;
 
 	IRS		resource;
 } DESKTOP, * LPDESKTOP;
-
-typedef POINT CELL;
 
 /* ------------------------------------------------ */
 
@@ -59,7 +72,7 @@ BOOL	SetItemPositionFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, POINT
 
 BOOL	SetItemCellFromIndex(DESKTOP desktop, INT index, CELL cell);
 BOOL	SetItemCellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, CELL cell);
-#define SetItemCellFromTextM(desktop, lpText, cell)		SetItemCellFromText(desktop, lpText, sizeof(lpText), cell)
+#define SetItemCellFromTextM(desktop, lpText, cell)			SetItemCellFromText(desktop, lpText, sizeof(lpText), cell)
 
 BOOL	MoveItemCpixelFromIndex(DESKTOP desktop, INT index, DIRECTION direction, INT Cpixel);
 BOOL	MoveItemCpixelFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, DIRECTION direction, INT Cpixel);
