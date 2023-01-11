@@ -49,10 +49,15 @@ HANDLE GetDesktopProcessHandle(LPDESKTOP lpDesktop)
 INTERNAL
 VOID RetrieveTrivialInformation(LPDESKTOP lpDesktop)
 {
+	CONST RECT	defaultRect = { 0, 0, 0, 0 };
 	DWORD	dwItemSpacingTemp;
 
 	// Retrieves item count
 	lpDesktop->dwItemCount = ListView_GetItemCount(lpDesktop->hwndListview);
+
+	// Mystery number
+	lpDesktop->ptMysteryNumber.x = MYSTERY_NUMBER_X;
+	lpDesktop->ptMysteryNumber.y = MYSTERY_NUMBER_Y;
 
 	// Retrieves horizontal and vertical spacing
 	dwItemSpacingTemp = ListView_GetItemSpacing(lpDesktop->hwndListview, FALSE);

@@ -97,7 +97,7 @@ BOOL SendMessageWithResource(DESKTOP desktop, UINT msg, WPARAM wParam, LPVOID re
 			size,
 			NULL
 		) &&
-		SendMessageW(
+		SendMessage(
 			desktop.hwndListview,
 			msg,
 			wParam,
@@ -279,10 +279,14 @@ BOOL SetItemPositionFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, POINT
 	return SetItemPositionFromIndex(desktop, index, point);
 }
 
-NOT_IMPLEMENTED
 BOOL SetItemCellFromIndex(DESKTOP desktop, INT index, CELL cell)
 {
-	return FALSE;
+	POINT dest;
+
+	dest.x = desktop.ptMysteryNumber.x + cell.column * desktop.wHorizSpacing;
+	dest.y = desktop.ptMysteryNumber.y + cell.row * desktop.wVertiSpacing;
+
+	return SetItemPositionFromIndex(desktop, index, dest);
 }
 
 BOOL SetItemCellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, CELL cell)
@@ -361,14 +365,3 @@ BOOL MoveItemCcellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, DIRECTI
 }
 
 /* ------------------------------------------------ */
-
-BOOL TestFunc(DESKTOP desktop, LPPOINT lppt)
-{
-	return SendMessageWithResource(
-		desktop,
-		LVM_GETORIGIN,
-		0,
-		lppt,
-		sizeof(POINT)
-	);
-}
