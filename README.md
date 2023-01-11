@@ -1,4 +1,4 @@
-# Desktop Icon Library (WIP)
+# Desktop Icon Library (Pre-release)
 I am writing this library to make it easier to interact with icons on the Desktop.
 
 ## Usage
@@ -22,13 +22,13 @@ DesktopFree(&dt);
 
 ### Using functions
 As of writing this, most of the functions defined in `ItemInteraction.c` has the following structure:
-```ansi
+```
 BOOL [Get/Set/Move]Item[Pixel/Cell/Cpixel/Ccell]From[Index/Text](DESKTOP desktop, ...);
 ```
 - Get/Set/Move
 
-Get: The function returns the position(in pixels or cells) of the item<br>
-Set: The function sets the position(in pixels or cells) of the item<br>
+Get: The function returns the position(in pixels or cells) of the item.<br>
+Set: The function sets the position(in pixels or cells) of the item.<br>
 Move: The function moves the item given amount of distance(in pixels or cells) in a given direction.
 
 - Pixel/Cell/Cpixel/Ccell
@@ -41,18 +41,19 @@ WIP
 
 ## Roadmap
 
-- [ ] Add more interactions with the desktop itself. (such as change the background image)
-- [ ] Find a way to toggle snap-to-grid
+- [ ] Add more interactions with the desktop itself
+    - [ ] Set/Get background image
+    - [ ] Find a way to toggle snap-to-grid
+- [ ] Add a feature to import the icon into .bmp file
+- [ ] Add a feature to change the icon from .bmp file
 
 ## Contributing
 
-To be honest, I haven't tested the command lines below lol
-
-1. Fork this repo
-2. Create new branch from [dev](https://github.com/NatsciT/DesktopIconLib/tree/dev) branch. Be sure to name the branch `dev/something`.
-3. Commit your changes.
-4. Push to the branch.
-5. Open PR.
+1. Fork this repo. `gh repo fork --clone NatsciT/DesktopIconLib`
+2. Create new branch from [dev](https://github.com/NatsciT/DesktopIconLib/tree/dev) branch. Be sure to name the branch `dev/something`. `git checkout -b dev/something dev`
+3. Commit your changes. `git commit -m "commit message"`
+4. Push to the branch. `git push origin`
+5. Open PR. `gh pr create -B origin/dev -t "pr title" -b "pr body"`
 
 ## Difficulties that I have encountered
 
@@ -64,7 +65,9 @@ I had to allocate memory on explorer.exe, write LVITEM structure containing the 
 
 - 'Mystery number'
 
-WIP
+![image](https://user-images.githubusercontent.com/97524957/211827755-f1291ad8-c4b2-459d-b58c-8794e87350fa.png)
+
+When I tried to retrieve the position of an item on mth column and nth row, it always returned the coordinate with some number added to it ─ on my computer, (+21, +2). I still have no idea why this is happening, so I decided to name it 'Mystery number' and threw them into calculations whenever they were needed.
 
 ## Licence
 [GNU General Public License v3.0](/LICENCE)
