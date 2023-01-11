@@ -193,15 +193,6 @@ BOOL GetItem(LPDESKTOP lpDesktop, DWORD index)
 }
 
 INTERNAL
-NOT_IMPLEMENTED
-BOOL SetItem(LPDESKTOP lpDesktop, LVITEMW item)
-{
-	// TODO: Implement
-
-	return FALSE;
-}
-
-INTERNAL
 BOOL FillItem(LPDESKTOP lpDesktop)
 {
 	DWORD	i;
@@ -218,7 +209,30 @@ BOOL FillItem(LPDESKTOP lpDesktop)
 /* ------------------------------------------------ */
 
 INTERNAL
-INT FindItemIndexFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size)
+POINT CellToPoint(DESKTOP desktop, CELL cell)
+{
+	POINT temp = { 0, 0 };
+
+	temp.x = desktop.ptMysteryNumber.x + cell.column * desktop.wHorizSpacing;
+	temp.y = desktop.ptMysteryNumber.y + cell.row * desktop.wVertiSpacing;
+
+	return temp;
+}
+
+INTERNAL
+CELL PointToCell(DESKTOP desktop, POINT point)
+{
+	CELL temp = { 0, 0 };
+
+	temp.column = (WORD)((double)(point.x - desktop.ptMysteryNumber.x) / desktop.wHorizSpacing);
+	temp.row = (WORD)((double)(point.y - desktop.ptMysteryNumber.y) / desktop.wVertiSpacing);
+
+	return temp;
+}
+
+/* ------------------------------------------------ */
+
+INT GetItemIndexFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size)
 {
 	INT i;
 
@@ -231,14 +245,14 @@ INT FindItemIndexFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size)
 	return -1;
 }
 
-/* ------------------------------------------------ */
-
 LPWSTR GetItemNameFromIndex(DESKTOP desktop, INT index)
 {
 	return desktop.resource.lpItemNames + MAX_PATH * index;
 }
 
-BOOL GetItemPositionFromIndex(DESKTOP desktop, INT index, LPPOINT lpPoint)
+/* ------------------------------------------------ */
+
+BOOL GetItemPixelFromIndex(DESKTOP desktop, INT index, LPPOINT lpPoint)
 {
 	return SendMessageWithResource(
 		desktop,
@@ -249,17 +263,40 @@ BOOL GetItemPositionFromIndex(DESKTOP desktop, INT index, LPPOINT lpPoint)
 	);
 }
 
-BOOL GetItemPositionFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, LPPOINT lpPoint)
+BOOL GetItemPixelFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, LPPOINT lpPoint)
 {
 	INT index;
 
-	if ((index = FindItemIndexFromText(desktop, lpText, size)) == -1)
+	if ((index = GetItemIndexFromText(desktop, lpText, size)) == -1)
 		return FALSE;
 
-	return GetItemPositionFromIndex(desktop, index, lpPoint);
+	return GetItemPixelFromIndex(desktop, index, lpPoint);
 }
 
-BOOL SetItemPositionFromIndex(DESKTOP desktop, INT index, POINT point)
+BOOL GetItemCellFromIndex(DESKTOP desktop, INT index, LPCELL lpCell)
+{
+	POINT temp = { 0, 0 };
+
+	if (!GetItemPixelFromIndex(desktop, index, &temp))
+		return FALSE;
+
+	*lpCell = PointToCell(desktop, temp);
+	return TRUE;
+}
+
+BOOL GetItemCellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, LPCELL lpCell)
+{
+	INT index;
+
+	if ((index = GetItemIndexFromText(desktop, lpText, size)) == -1)
+		return FALSE;
+
+	return GetItemCellFromIndex(desktop, index, lpCell);
+}
+
+/* ------------------------------------------------ */
+
+BOOL SetItemPixelFromIndex(DESKTOP desktop, INT index, POINT point)
 {
 	return ListView_SetItemPosition(
 		desktop.hwndListview,
@@ -269,31 +306,26 @@ BOOL SetItemPositionFromIndex(DESKTOP desktop, INT index, POINT point)
 	);
 }
 
-BOOL SetItemPositionFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, POINT point)
+BOOL SetItemPixelFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, POINT point)
 {
 	INT index;
 
-	if ((index = FindItemIndexFromText(desktop, lpText, size)) == -1)
+	if ((index = GetItemIndexFromText(desktop, lpText, size)) == -1)
 		return FALSE;
 
-	return SetItemPositionFromIndex(desktop, index, point);
+	return SetItemPixelFromIndex(desktop, index, point);
 }
 
 BOOL SetItemCellFromIndex(DESKTOP desktop, INT index, CELL cell)
 {
-	POINT dest;
-
-	dest.x = desktop.ptMysteryNumber.x + cell.column * desktop.wHorizSpacing;
-	dest.y = desktop.ptMysteryNumber.y + cell.row * desktop.wVertiSpacing;
-
-	return SetItemPositionFromIndex(desktop, index, dest);
+	return SetItemPixelFromIndex(desktop, index, CellToPoint(desktop, cell));
 }
 
 BOOL SetItemCellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, CELL cell)
 {
 	INT index;
 
-	if ((index = FindItemIndexFromText(desktop, lpText, size)) == -1)
+	if ((index = GetItemIndexFromText(desktop, lpText, size)) == -1)
 		return FALSE;
 
 	return SetItemCellFromIndex(desktop, index, cell);
@@ -327,20 +359,20 @@ BOOL MoveItemCpixelFromIndex(DESKTOP desktop, INT index, DIRECTION direction, IN
 		break;
 	}
 
-	if (!GetItemPositionFromIndex(desktop, index, &ptCurrent))
+	if (!GetItemPixelFromIndex(desktop, index, &ptCurrent))
 		return FALSE;
 
 	ptCurrent.x += Cpixel * horizontalMultiplier;
 	ptCurrent.y += Cpixel * verticalMultiplier;
 
-	return SetItemPositionFromIndex(desktop, index, ptCurrent);
+	return SetItemPixelFromIndex(desktop, index, ptCurrent);
 }
 
 BOOL MoveItemCpixelFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, DIRECTION direction, INT Cpixel)
 {
 	INT index;
 
-	if ((index = FindItemIndexFromText(desktop, lpText, size)) == -1)
+	if ((index = GetItemIndexFromText(desktop, lpText, size)) == -1)
 		return FALSE;
 
 	return MoveItemCpixelFromIndex(desktop, index, direction, Cpixel);
@@ -358,7 +390,7 @@ BOOL MoveItemCcellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, DIRECTI
 {
 	INT index;
 
-	if ((index = FindItemIndexFromText(desktop, lpText, size)) == -1)
+	if ((index = GetItemIndexFromText(desktop, lpText, size)) == -1)
 		return FALSE;
 
 	return MoveItemCcellFromIndex(desktop, index, direction, Ccell);
