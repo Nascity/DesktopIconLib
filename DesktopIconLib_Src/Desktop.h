@@ -17,7 +17,7 @@ typedef struct tagCELL
 {
 	WORD	column;
 	WORD	row;
-} CELL;
+} CELL, *LPCELL;
 
 typedef struct tagINTERNALRESOURCESTRUCT
 {
@@ -33,7 +33,6 @@ typedef struct tagDESKTOP
 	HWND	hwndListview;
 	HANDLE	hProcessExplorer;
 
-	CELL	cMaxCell;
 	POINT	ptMysteryNumber;
 
 	DWORD	dwItemCount;
@@ -49,24 +48,30 @@ typedef enum { left = 0, up, right, down } DIRECTION;
 
 /* ------------------------------------ Desktop.c - */
 
-BOOL	DesktopInit(LPDESKTOP pDesktop);
+BOOL	DesktopInit(LPDESKTOP lpDesktop);
+BOOL	DesktopRefresh(LPDESKTOP lpDesktop);
 BOOL	DesktopFree(LPDESKTOP lpDesktop);
 
 /* ---------------------------- ItemInteraction.c - */
 
+INT		GetItemIndexFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size);
 LPWSTR	GetItemNameFromIndex(DESKTOP desktop, INT index);
 
-BOOL	GetItemPositionFromIndex(DESKTOP desktop, INT index, LPPOINT lpPoint);
-BOOL	GetItemPositionFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, LPPOINT lpPoint);
-#define	GetItemPositionFromTextM(desktop, lpText, lpPoint)	GetItemPositionFromText(desktop, lpText, sizeof(lpText), lpPoint)
+BOOL	GetItemPixelFromIndex(DESKTOP desktop, INT index, LPPOINT lpPoint);
+BOOL	GetItemPixelFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, LPPOINT lpPoint);
+#define	GetItemPixelFromTextM(desktop, lpText, lpPoint)	GetItemPixelFromText(desktop, lpText, sizeof(lpText), lpPoint)
 
-BOOL	SetItemPositionFromIndex(DESKTOP desktop, INT index, POINT point);
-BOOL	SetItemPositionFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, POINT point);
-#define	SetItemPositionFromTextM(desktop, lpText, point)	SetItemPositionFromText(desktop, lpText, sizeof(lpText), point)
+BOOL	GetItemCellFromIndex(DESKTOP desktop, INT index, LPCELL lpCell);
+BOOL	GetItemCellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, LPCELL lpCell);
+#define	GetItemCellFromTextM(desktop, lpText, lpCell)	GetItemCellFromText(desktop, lpText, sizeof(lpText), lpCell)
+
+BOOL	SetItemPixelFromIndex(DESKTOP desktop, INT index, POINT point);
+BOOL	SetItemPixelFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, POINT point);
+#define	SetItemPixelFromTextM(desktop, lpText, point)	SetItemPixelFromText(desktop, lpText, sizeof(lpText), point)
 
 BOOL	SetItemCellFromIndex(DESKTOP desktop, INT index, CELL cell);
 BOOL	SetItemCellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, CELL cell);
-#define SetItemCellFromTextM(desktop, lpText, cell)			SetItemCellFromText(desktop, lpText, sizeof(lpText), cell)
+#define SetItemCellFromTextM(desktop, lpText, cell)		SetItemCellFromText(desktop, lpText, sizeof(lpText), cell)
 
 BOOL	MoveItemCpixelFromIndex(DESKTOP desktop, INT index, DIRECTION direction, INT Cpixel);
 BOOL	MoveItemCpixelFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, DIRECTION direction, INT Cpixel);

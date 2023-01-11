@@ -66,7 +66,7 @@ BOOL CalculateMysteryNumber(LPDESKTOP lpDesktop)
 {
 	POINT temp;
 
-	if (!GetItemPositionFromIndex(*lpDesktop, 0, &temp))
+	if (!GetItemPixelFromIndex(*lpDesktop, 0, &temp))
 		return FALSE;
 
 	lpDesktop->ptMysteryNumber.x = temp.x % lpDesktop->wHorizSpacing;
@@ -105,6 +105,12 @@ BOOL DesktopInit(LPDESKTOP lpDesktop)
 	CalculateMysteryNumber(lpDesktop);
 
 	return TRUE;
+}
+
+BOOL DesktopRefresh(LPDESKTOP lpDesktop)
+{
+	return DesktopFree(lpDesktop)
+		&& DesktopInit(lpDesktop);
 }
 
 BOOL DesktopFree(LPDESKTOP lpDesktop)
