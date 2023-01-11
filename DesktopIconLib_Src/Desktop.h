@@ -13,12 +13,6 @@
 
 /* ------------------------------------------------ */
 
-// I don't know what these are btw
-#define MYSTERY_NUMBER_X	21
-#define MYSTERY_NUMBER_Y	2
-
-/* ------------------------------------------------ */
-
 typedef struct tagCELL
 {
 	WORD	column;
