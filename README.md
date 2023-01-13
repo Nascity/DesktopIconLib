@@ -31,6 +31,14 @@ I am writing this library to make it easier to interact with icons on the Deskto
 
 ## Changelog
 
+### 0.1.0
+
+- Change the way how `DESKTOP` struct is initialized.
+	- Renamed `INTERNALRESOURCESTRUCT` to `ITEMSNAPSHOT`.
+	- Removed the part where `DesktopInit` function allocates memory for (what used to be) `INTERNALRESOURCESTRUCT`.<br>
+The user is obligated to call `TakeItemSnapshot`.
+- Added `DesktopInteraction.c`.
+
 ### 0.0.0
 
-- Initial release
+- Initial release.
