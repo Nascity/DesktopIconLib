@@ -31,6 +31,6 @@ I am writing this library to make it easier to interact with icons on the Deskto
 
 ## Changelog
 
-- 0.0.0
+### 0.0.0
 
-Initial release
+- Initial release
