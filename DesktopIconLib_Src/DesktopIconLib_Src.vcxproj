@@ -135,6 +135,7 @@
   <ItemGroup>
     <ClCompile Include="Debug.c" />
     <ClCompile Include="Desktop.c" />
+    <ClCompile Include="DesktopInteraction.c" />
     <ClCompile Include="ItemInteraction.c" />
     <ClCompile Include="Main.c" />
   </ItemGroup>

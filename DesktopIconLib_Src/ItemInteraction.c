@@ -9,10 +9,10 @@
 // If allocating for DESKTOP, itemcount = lpDesktop->dwItemCount
 // If allocating for explorer.exe, itemcount = 1
 INTERNAL
-BOOL AllocateIRS(LPIRS lpIRS, HANDLE hProcess, DWORD itemcount)
+BOOL AllocateISS(LPITEMSNAPSHOT lpISS, HANDLE hProcess, DWORD itemcount)
 {
 	// For item(s)
-	if (lpIRS->lpItems
+	if (lpISS->lpItems
 		= VirtualAllocEx(
 			hProcess,
 			NULL,
@@ -22,7 +22,7 @@ BOOL AllocateIRS(LPIRS lpIRS, HANDLE hProcess, DWORD itemcount)
 		))
 	{
 		// For name(s)
-		if (lpIRS->lpItemNames
+		if (lpISS->lpItemNames
 			= VirtualAllocEx(
 				hProcess,
 				NULL,
@@ -32,7 +32,7 @@ BOOL AllocateIRS(LPIRS lpIRS, HANDLE hProcess, DWORD itemcount)
 			))
 		{
 			// For puColumns(es)
-			if (lpIRS->puColumnses
+			if (lpISS->puColumnses
 				= VirtualAllocEx(
 					hProcess,
 					NULL,
@@ -42,7 +42,7 @@ BOOL AllocateIRS(LPIRS lpIRS, HANDLE hProcess, DWORD itemcount)
 				))
 			{
 				// For piColFmt(s)
-				if (lpIRS->piColFmts
+				if (lpISS->piColFmts
 					= VirtualAllocEx(
 						hProcess,
 						NULL,
@@ -53,11 +53,11 @@ BOOL AllocateIRS(LPIRS lpIRS, HANDLE hProcess, DWORD itemcount)
 				{
 					return TRUE;
 				}
-				VirtualFreeEx(hProcess, lpIRS->puColumnses, 0, MEM_RELEASE);
+				VirtualFreeEx(hProcess, lpISS->puColumnses, 0, MEM_RELEASE);
 			}
-			VirtualFreeEx(hProcess, lpIRS->lpItemNames, 0, MEM_RELEASE);
+			VirtualFreeEx(hProcess, lpISS->lpItemNames, 0, MEM_RELEASE);
 		}
-		VirtualFreeEx(hProcess, lpIRS->lpItems, 0, MEM_RELEASE);
+		VirtualFreeEx(hProcess, lpISS->lpItems, 0, MEM_RELEASE);
 	}
 
 	return FALSE;
@@ -65,13 +65,13 @@ BOOL AllocateIRS(LPIRS lpIRS, HANDLE hProcess, DWORD itemcount)
 
 // Frees memory for item(s) and their resources
 INTERNAL
-BOOL FreeIRS(LPIRS lpIRS, HANDLE hProcess)
+BOOL FreeISS(LPITEMSNAPSHOT lpISS, HANDLE hProcess)
 {
 	return
-		VirtualFreeEx(hProcess, lpIRS->lpItems, 0, MEM_RELEASE) &&
-		VirtualFreeEx(hProcess, lpIRS->lpItemNames, 0, MEM_RELEASE) &&
-		VirtualFreeEx(hProcess, lpIRS->puColumnses, 0, MEM_RELEASE) &&
-		VirtualFreeEx(hProcess, lpIRS->piColFmts, 0, MEM_RELEASE);
+		VirtualFreeEx(hProcess, lpISS->lpItems, 0, MEM_RELEASE) &&
+		VirtualFreeEx(hProcess, lpISS->lpItemNames, 0, MEM_RELEASE) &&
+		VirtualFreeEx(hProcess, lpISS->puColumnses, 0, MEM_RELEASE) &&
+		VirtualFreeEx(hProcess, lpISS->piColFmts, 0, MEM_RELEASE);
 }
 
 INTERNAL
@@ -124,13 +124,13 @@ BOOL SendMessageWithResource(DESKTOP desktop, UINT msg, WPARAM wParam, LPVOID re
 INTERNAL
 BOOL GetItem(LPDESKTOP lpDesktop, DWORD index)
 {
-	LVITEMW		itemTemp = { 0, };
-	IRS			irsTemp = { 0, };
+	LVITEMW			itemTemp = { 0, };
+	ITEMSNAPSHOT	issTemp = { 0, };
 
 	BOOL	ret = FALSE;
 
 	// 1. Alloc mem
-	if (!AllocateIRS(&irsTemp, lpDesktop->hProcessExplorer, 1))
+	if (!AllocateISS(&issTemp, lpDesktop->hProcessExplorer, 1))
 		return FALSE;
 
 	// 2. Write LVITEM
@@ -142,54 +142,54 @@ BOOL GetItem(LPDESKTOP lpDesktop, DWORD index)
 	itemTemp.stateMask = -1;
 
 	itemTemp.cchTextMax = MAX_PATH;
-	itemTemp.pszText = irsTemp.lpItemNames;
+	itemTemp.pszText = issTemp.lpItemNames;
 
-	itemTemp.puColumns = irsTemp.puColumnses;
-	itemTemp.piColFmt = irsTemp.piColFmts;
+	itemTemp.puColumns = issTemp.puColumnses;
+	itemTemp.piColFmt = issTemp.piColFmts;
 
 	// 3. Insert LVITEM
-	if (irsTemp.lpItemNames &&
+	if (issTemp.lpItemNames &&
 		WriteProcessMemory(
 			lpDesktop->hProcessExplorer,
-			irsTemp.lpItems,
+			issTemp.lpItems,
 			&itemTemp,
 			sizeof(LVITEMW),
 			NULL
 		))
 	{
 		// 4. Call macro
-		ListView_GetItem(lpDesktop->hwndListview, irsTemp.lpItems);
+		ListView_GetItem(lpDesktop->hwndListview, issTemp.lpItems);
 
 		// 5. Retrieve LVITEM
 		ret =
 			ReadProcessMemory(
 				lpDesktop->hProcessExplorer,
-				irsTemp.lpItems,
-				lpDesktop->resource.lpItems + index,
+				issTemp.lpItems,
+				lpDesktop->iss.lpItems + index,
 				sizeof(LVITEMW),
 				NULL) &&
 			ReadProcessMemory(
 				lpDesktop->hProcessExplorer,
-				irsTemp.lpItemNames,
-				GetItemNameFromIndex(*lpDesktop, index),
+				issTemp.lpItemNames,
+				GetItemTextFromIndex(*lpDesktop, index),
 				sizeof(WCHAR) * MAX_PATH,
 				NULL) &&
 			ReadProcessMemory(
 				lpDesktop->hProcessExplorer,
-				irsTemp.puColumnses,
-				lpDesktop->resource.puColumnses + index,
+				issTemp.puColumnses,
+				lpDesktop->iss.puColumnses + index,
 				sizeof(UINT),
 				NULL) &&
 			ReadProcessMemory(
 				lpDesktop->hProcessExplorer,
-				irsTemp.piColFmts,
-				lpDesktop->resource.piColFmts + index,
+				issTemp.piColFmts,
+				lpDesktop->iss.piColFmts + index,
 				sizeof(INT),
 				NULL);
 	}
 
 	// 6. Free mem
-	return FreeIRS(&irsTemp, lpDesktop->hProcessExplorer) && ret;
+	return FreeISS(&issTemp, lpDesktop->hProcessExplorer) && ret;
 }
 
 INTERNAL
@@ -209,6 +209,7 @@ BOOL FillItem(LPDESKTOP lpDesktop)
 /* ------------------------------------------------ */
 
 INTERNAL
+inline
 POINT CellToPoint(DESKTOP desktop, CELL cell)
 {
 	POINT temp = { 0, 0 };
@@ -220,6 +221,7 @@ POINT CellToPoint(DESKTOP desktop, CELL cell)
 }
 
 INTERNAL
+inline
 CELL PointToCell(DESKTOP desktop, POINT point)
 {
 	CELL temp = { 0, 0 };
@@ -232,26 +234,50 @@ CELL PointToCell(DESKTOP desktop, POINT point)
 
 /* ------------------------------------------------ */
 
+BOOL TakeItemSnapshot(LPDESKTOP lpDesktop)
+{
+	// 1. Allocates memory for iss
+	// 2. Uses FillItem function to fill in the struct
+	// If there's already a snapshot, it only calls FillItem function
+	return (
+		lpDesktop->bItemSnapshotValid ||
+		AllocateISS(&(lpDesktop->iss), GetCurrentProcess(), lpDesktop->dwItemCount)) &&
+		FillItem(lpDesktop);
+}
+
+BOOL FreeItemSnapshot(LPDESKTOP lpDesktop)
+{
+	return lpDesktop->bItemSnapshotValid &&
+		FreeISS(&(lpDesktop->iss), GetCurrentProcess());
+}
+
+/* ------------------------------------------------ */
+
 INT GetItemIndexFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size)
 {
 	INT i;
 
-	for (i = 0; i < (INT)desktop.dwItemCount; i++)
+	if (desktop.bItemSnapshotValid)
 	{
-		if (RtlCompareMemory(GetItemNameFromIndex(desktop, i), lpText, size) == size)
-			return i;
+		for (i = 0; i < (INT)desktop.dwItemCount; i++)
+		{
+			if (RtlCompareMemory(GetItemTextFromIndex(desktop, i), lpText, size) == size)
+				return i;
+		}
 	}
 
 	return -1;
 }
 
-LPWSTR GetItemNameFromIndex(DESKTOP desktop, INT index)
+LPWSTR GetItemTextFromIndex(DESKTOP desktop, INT index)
 {
-	return desktop.resource.lpItemNames + MAX_PATH * index;
+	if (!desktop.bItemSnapshotValid) return L"No valid item snapshot";
+	return desktop.iss.lpItemNames + MAX_PATH * index;
 }
 
 /* ------------------------------------------------ */
 
+// Ultimately, this function is called by GetItem[...] functions
 BOOL GetItemPixelFromIndex(DESKTOP desktop, INT index, LPPOINT lpPoint)
 {
 	return SendMessageWithResource(
@@ -296,6 +322,7 @@ BOOL GetItemCellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, LPCELL lp
 
 /* ------------------------------------------------ */
 
+// Ultimately, this function is called by SetItem[...] and MoveItem[...] functions
 BOOL SetItemPixelFromIndex(DESKTOP desktop, INT index, POINT point)
 {
 	return ListView_SetItemPosition(

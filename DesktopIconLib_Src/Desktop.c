@@ -5,13 +5,6 @@
 
 /* ------------------------------------------------ */
 
-extern BOOL FillItem(LPDESKTOP lpDesktop);
-
-extern BOOL AllocateIRS(LPIRS lpIRS, HANDLE hProcess, DWORD itemcount);
-extern BOOL FreeIRS(LPIRS lpIRS, HANDLE hProcess);
-
-/* ------------------------------------------------ */
-
 // Function to find hwnd to the Desktop ListView
 // Returns NULL when fails
 INTERNAL
@@ -86,11 +79,8 @@ BOOL DesktopInit(LPDESKTOP lpDesktop)
 	// DO NOT MOVE THIS LINE
 	RetrieveTrivialInformation(lpDesktop);
 
+	// If the item count is 0, initialization fails
 	if (!(lpDesktop->dwItemCount))
-		return FALSE;
-	
-	// Allocates memory to lpItems
-	if (!AllocateIRS(&(lpDesktop->resource), GetCurrentProcess(), lpDesktop->dwItemCount))
 		return FALSE;
 
 	// Retreives handle to the Desktop process
@@ -98,8 +88,8 @@ BOOL DesktopInit(LPDESKTOP lpDesktop)
 	if (!GetDesktopProcessHandle(lpDesktop))
 		return FALSE;
 
-	if (!FillItem(lpDesktop))
-		return FALSE;
+	// The item snapshot is not valid until the user initializes it
+	lpDesktop->bItemSnapshotValid = FALSE;
 
 	// Calculates the mystery number
 	CalculateMysteryNumber(lpDesktop);
@@ -116,6 +106,6 @@ BOOL DesktopRefresh(LPDESKTOP lpDesktop)
 BOOL DesktopFree(LPDESKTOP lpDesktop)
 {
 	return
-		FreeIRS(&(lpDesktop->resource), GetCurrentProcess()) &&
+		FreeItemSnapshot(lpDesktop) &&
 		CloseHandle(lpDesktop->hProcessExplorer);
 }

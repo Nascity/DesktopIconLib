@@ -19,14 +19,14 @@ typedef struct tagCELL
 	WORD	row;
 } CELL, *LPCELL;
 
-typedef struct tagINTERNALRESOURCESTRUCT
+typedef struct tagITEMSNAPSHOT
 {
 	// Destination
 	LPLVITEMW	lpItems;
 	LPWSTR		lpItemNames;
 	PUINT		puColumnses;
 	PINT		piColFmts;
-} IRS, *LPIRS;
+} ITEMSNAPSHOT, * LPITEMSNAPSHOT;
 
 typedef struct tagDESKTOP
 {
@@ -39,7 +39,8 @@ typedef struct tagDESKTOP
 	WORD	wHorizSpacing;
 	WORD	wVertiSpacing;
 
-	IRS		resource;
+	BOOL			bItemSnapshotValid;
+	ITEMSNAPSHOT	iss;
 } DESKTOP, * LPDESKTOP;
 
 /* ------------------------------------------------ */
@@ -52,10 +53,17 @@ BOOL	DesktopInit(LPDESKTOP lpDesktop);
 BOOL	DesktopRefresh(LPDESKTOP lpDesktop);
 BOOL	DesktopFree(LPDESKTOP lpDesktop);
 
+/* ------------------------- DesktopInteraction.c - */
+
+
+
 /* ---------------------------- ItemInteraction.c - */
 
+BOOL	TakeItemSnapshot(LPDESKTOP lpDesktop);
+BOOL	FreeItemSnapshot(LPDESKTOP lpDesktop);
+
 INT		GetItemIndexFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size);
-LPWSTR	GetItemNameFromIndex(DESKTOP desktop, INT index);
+LPWSTR	GetItemTextFromIndex(DESKTOP desktop, INT index);
 
 BOOL	GetItemPixelFromIndex(DESKTOP desktop, INT index, LPPOINT lpPoint);
 BOOL	GetItemPixelFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, LPPOINT lpPoint);
@@ -95,7 +103,7 @@ VOID	Debug_PrintInteger(INT integer);
 
 /* ------------------------------------------------ */
 
-#define INTERNAL
+#define INTERNAL		static
 #define NOT_IMPLEMENTED	static
 
 /* ------------------------------------------------ */
