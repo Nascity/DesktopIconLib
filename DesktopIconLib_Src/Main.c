@@ -8,7 +8,11 @@ int main(void)
 
 	if (DesktopInit(&dt))
 	{
-		
+		if (TakeItemSnapshot(&dt))
+		{
+			
+		}
+		FreeItemSnapshot(&dt);
 	}
 	DesktopFree(&dt);
 

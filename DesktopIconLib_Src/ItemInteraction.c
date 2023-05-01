@@ -424,3 +424,4 @@ BOOL MoveItemCcellFromText(DESKTOP desktop, LPCWSTR lpText, SIZE_T size, DIRECTI
 }
 
 /* ------------------------------------------------ */
+
